@@ -89,6 +89,15 @@ export default function RootLayout({
             })(window, document, "clarity", "script", "w1qfvyn1or");
           `}
         </Script>
+        {/* Google tag (gtag.js) */}
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-X6TMJVNSSG"></script>
+        <script>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+        
+          gtag('config', 'G-X6TMJVNSSG');
+        </script>
       </body>
     </html>
   );
