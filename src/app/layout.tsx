@@ -42,6 +42,11 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+
+  // ✅ Proper place for Google verification
+  verification: {
+    google: "ox4VTUbDahG8OuY0-swj_8gpmzcLW3mhs1hUKsuQONg",
+  },
 };
 
 export default function RootLayout({
@@ -52,13 +57,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased min-h-screen">
-        {/* Google Site Verification */}
-        <meta
-          name="google-site-verification"
-          content="ox4VTUbDahG8OuY0-swj_8gpmzcLW3mhs1hUKsuQONg"
-        />
-
-        {/* Fonts */}
+        
+        {/* Fonts (Better: move to next/font later) */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"
@@ -79,7 +79,7 @@ export default function RootLayout({
           <AIAssistant />
         </div>
 
-        {/* Microsoft Clarity */}
+        {/* ✅ Microsoft Clarity */}
         <Script id="clarity" strategy="afterInteractive">
           {`
             (function(c,l,a,r,i,t,y){
@@ -89,15 +89,20 @@ export default function RootLayout({
             })(window, document, "clarity", "script", "w1qfvyn1or");
           `}
         </Script>
-        {/* Google tag (gtag.js) */}
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-X6TMJVNSSG"></script>
-        <script>
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-        
-          gtag('config', 'G-X6TMJVNSSG');
-        </script>
+
+        {/* ✅ Google Analytics */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-X6TMJVNSSG"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-X6TMJVNSSG');
+          `}
+        </Script>
       </body>
     </html>
   );
