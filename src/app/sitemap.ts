@@ -6,6 +6,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const routes = [
     '',
     '/image-editor',
+    '/video-editor',
     '/wedding-cards',
     '/invitation-maker',
     '/social-media',
