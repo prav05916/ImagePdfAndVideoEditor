@@ -77,6 +77,17 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap"
           rel="stylesheet"
         />
+        
+        {/* Microsoft Clarity - Using your exact script format */}
+        <Script id="clarity-script" strategy="afterInteractive">
+          {`
+            (function(c,l,a,r,i,t,y){
+                c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+                t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+                y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+            })(window, document, "clarity", "script", "w1qfvyn1or");
+          `}
+        </Script>
       </head>
       <body className="antialiased min-h-screen">
         <div className="flex min-h-screen">
@@ -88,17 +99,6 @@ export default function RootLayout({
           </main>
           <AIAssistant />
         </div>
-
-        {/* Microsoft Clarity - Standard implementation with afterInteractive */}
-        <Script id="microsoft-clarity" strategy="afterInteractive">
-          {`
-            (function(c,l,a,r,i,t,y){
-                c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-                t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-                y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-            })(window, document, "clarity", "script", "w1qfvyn1or");
-          `}
-        </Script>
 
         {/* Global Structured Data (JSON-LD) */}
         <Script id="json-ld" type="application/ld+json" strategy="afterInteractive">
