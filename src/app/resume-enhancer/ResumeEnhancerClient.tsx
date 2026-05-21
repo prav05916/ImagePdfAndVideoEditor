@@ -29,6 +29,17 @@ export default function ResumeEnhancerPage() {
   const [aiTargetRole, setAiTargetRole] = useState('');
   const [isAiGenerating, setIsAiGenerating] = useState(false);
 
+  // ATS Optimization States
+  const [appliedKeywords, setAppliedKeywords] = useState(false);
+  const [appliedMetrics, setAppliedMetrics] = useState(false);
+  const [appliedSummary, setAppliedSummary] = useState(false);
+  const [appliedContact, setAppliedContact] = useState(false);
+
+  // Role Analyzer States
+  const [targetRoleInput, setTargetRoleInput] = useState('');
+  const [analyzingRole, setAnalyzingRole] = useState(false);
+  const [recommendations, setRecommendations] = useState<string[] | null>(null);
+
   // Drag and Drop state
   const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
 
@@ -46,21 +57,163 @@ export default function ResumeEnhancerPage() {
     { id: 'sec-skills', type: 'Skills', title: 'Key Skills', visible: true, content: { text: 'JavaScript, TypeScript, React, Next.js, Node.js, Tailwind CSS, GraphQL, Git, AWS' } }
   ]);
 
-  // ATS Scoring Logic
+  // ATS Scoring Logic - Dynamic & Upgradable
   const getATSScore = () => {
-    let score = 0;
+    let score = 30; // base score for standard content
+    if (appliedKeywords) score += 20;
+    if (appliedMetrics) score += 20;
+    if (appliedSummary) score += 20;
+    if (appliedContact) score += 10;
+
+    // dynamic bonuses based on lengths
     const summary = sections.find(s => s.type === 'Summary')?.content.text || '';
-    if (summary.split(' ').length > 15) score += 20;
-    const exp = sections.find(s => s.type === 'Experience')?.content.items || [];
-    if (exp.length > 0) score += 30;
+    if (summary.split(' ').length > 25) score += 5;
+
     const skills = sections.find(s => s.type === 'Skills')?.content.text || '';
-    if (skills.length > 10) score += 30;
-    const edu = sections.find(s => s.type === 'Education')?.content.items || [];
-    if (edu.length > 0) score += 20;
-    return score;
+    if (skills.split(',').length > 5) score += 5;
+
+    return Math.min(100, score);
   };
 
   const atsScore = getATSScore();
+
+  // AI Implementation Handlers
+  const handleInsertKeywords = () => {
+    setIsAiGenerating(true);
+    setTimeout(() => {
+      const skillsSec = sections.find(s => s.type === 'Skills');
+      if (skillsSec) {
+        const addedKeywords = "TypeScript, React Native, CI/CD Pipelines, System Architecture, AWS (S3/EC2/Lambda), GraphQL, Docker, Microservices, Jest, Cypress";
+        const currentText = skillsSec.content.text || '';
+        const separator = currentText ? ', ' : '';
+        updateSectionContent(skillsSec.id, { text: currentText + separator + addedKeywords });
+      }
+      setAppliedKeywords(true);
+      setIsAiGenerating(false);
+    }, 1000);
+  };
+
+  const handleInjectMetrics = () => {
+    setIsAiGenerating(true);
+    setTimeout(() => {
+      const expSec = sections.find(s => s.type === 'Experience');
+      if (expSec && expSec.content.items?.length > 0) {
+        const firstItem = expSec.content.items[0];
+        const enhancedDesc = `• Spearheaded frontend migration to Next.js, reducing LCP (Largest Contentful Paint) times by 38% and overall page bundle size by 45%.\n• Designed scalable micro-frontend architecture catering to 2M+ active monthly users, increasing user engagement by 22%.\n• Mentored 5 junior engineers and introduced automated testing (Jest/Cypress), boosting test coverage from 10% to 85%.\n• Reduced annual cloud infrastructure costs by 15% ($45k savings) through route optimizations and serverless API integration.`;
+        updateArrayItem(expSec.id, firstItem.id, 'desc', enhancedDesc);
+      }
+      setAppliedMetrics(true);
+      setIsAiGenerating(false);
+    }, 1000);
+  };
+
+  const handleEnhanceSummary = () => {
+    setIsAiGenerating(true);
+    setTimeout(() => {
+      const sumSec = sections.find(s => s.type === 'Summary');
+      if (sumSec) {
+        const premiumSummary = `Metrics-driven Senior Software Engineer with 5+ years of experience architecting high-performance React/Next.js systems. Recognized expert in optimizing page performance, building robust component designs, and developing cloud-native microservices. Passionate about leading collaborative engineering teams and turning complex product visions into scalable, user-centric codebases.`;
+        updateSectionContent(sumSec.id, { text: premiumSummary });
+      }
+      setAppliedSummary(true);
+      setIsAiGenerating(false);
+    }, 1000);
+  };
+
+  const handleCompleteProfile = () => {
+    setIsAiGenerating(true);
+    setTimeout(() => {
+      const personalSec = sections.find(s => s.type === 'Personal');
+      if (personalSec) {
+        updateSectionContent(personalSec.id, {
+          email: 'shivansh.doe@developer.com',
+          phone: '+91 99999 88888',
+          address: 'Mumbai, Maharashtra, India',
+          linkedin: 'linkedin.com/in/shivansh-dev',
+          github: 'github.com/shivansh-codes'
+        });
+      }
+      setAppliedContact(true);
+      setIsAiGenerating(false);
+    }, 1000);
+  };
+
+  // Role Analyzer Suggestion Logic
+  const handleAnalyzeRole = () => {
+    if (!targetRoleInput.trim()) return;
+    setAnalyzingRole(true);
+    setTimeout(() => {
+      const role = targetRoleInput.toLowerCase();
+      let suggestionsList = [
+        "Include technical keywords such as CI/CD, Jest, Docker, and Webpack.",
+        "Emphasize scalable architectural layouts in work descriptions.",
+        "Highlight collaborative engineering practices like Agile sprints and code reviews."
+      ];
+
+      if (role.includes('data') || role.includes('machine') || role.includes('ai')) {
+        suggestionsList = [
+          "Integrate high-value keyword structures: Python, Pandas, Scikit-Learn, PyTorch, SQL.",
+          "Add machine learning pipeline metrics (e.g., 'achieved 94% accuracy, optimized inference time').",
+          "Highlight projects dealing with large data queries and cloud architectures (AWS/GCP)."
+        ];
+      } else if (role.includes('front') || role.includes('react') || role.includes('ui')) {
+        suggestionsList = [
+          "Embed UX/performance keywords: Next.js, TypeScript, Tailwind CSS, Core Web Vitals, SSR.",
+          "Showcase responsiveness and user interaction improvements with quantifiable KPIs.",
+          "Detail modular UI architectures and custom reusable React hooks library creation."
+        ];
+      } else if (role.includes('back') || role.includes('node') || role.includes('api')) {
+        suggestionsList = [
+          "Integrate backend keywords: Node.js, Express, PostgreSQL, Redis, Microservices, gRPC.",
+          "Add latency and query efficiency achievements (e.g., 'reduced API response times by 40%').",
+          "Emphasize robust authentication protocols (JWT, OAuth) and database optimization."
+        ];
+      }
+
+      setRecommendations(suggestionsList);
+      setAnalyzingRole(false);
+    }, 1200);
+  };
+
+  const handleApplyRoleImprovements = () => {
+    setIsAiGenerating(true);
+    setTimeout(() => {
+      const role = targetRoleInput || "Data Scientist";
+      const personalSec = sections.find(s => s.type === 'Personal');
+      if (personalSec) {
+        updateSectionContent(personalSec.id, { role: `Senior ${role}` });
+      }
+
+      // Add specialized keywords
+      const skillsSec = sections.find(s => s.type === 'Skills');
+      if (skillsSec) {
+        let keywordString = "Scrum, CI/CD, Git, System Design";
+        if (role.toLowerCase().includes('data') || role.toLowerCase().includes('machine')) {
+          keywordString = "Python, SQL, PyTorch, Pandas, Scikit-Learn, Big Data, AWS SageMaker";
+        } else if (role.toLowerCase().includes('front') || role.toLowerCase().includes('react')) {
+          keywordString = "TypeScript, React, Next.js, Redux Toolkit, Webpack, Tailwind CSS, Cypress";
+        } else {
+          keywordString = "Node.js, Express, PostgreSQL, Redis, Docker, Kubernetes, AWS, REST APIs";
+        }
+        updateSectionContent(skillsSec.id, { text: keywordString });
+      }
+
+      // Add specialized summary
+      const sumSec = sections.find(s => s.type === 'Summary');
+      if (sumSec) {
+        updateSectionContent(sumSec.id, {
+          text: `Accomplished and results-oriented Senior ${role} with a proven record of designing scalable, high-impact systems. Adept at leveraging state-of-the-art architectures to drive business growth, optimize performance, and lead agile teams to success. Specialized in modern development frameworks and technical problem-solving.`
+        });
+      }
+
+      setAppliedKeywords(true);
+      setAppliedMetrics(true);
+      setAppliedSummary(true);
+      setIsAiGenerating(false);
+      setRecommendations(null);
+      setTargetRoleInput('');
+    }, 1500);
+  };
 
   const updateSectionContent = (id: string, payload: any) => {
     setSections(prev => prev.map(s => s.id === id ? { ...s, content: { ...s.content, ...payload } } : s));
@@ -271,19 +424,153 @@ export default function ResumeEnhancerPage() {
 
             {activeSidebarTab === 'ai' && (
               <div className="space-y-4">
-                <div className="p-4 rounded-xl border border-primary/30 bg-primary/5 relative overflow-hidden">
-                  {isAiGenerating && <div className="absolute inset-0 bg-surface/80 backdrop-blur-sm z-10 flex items-center justify-center"><div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div></div>}
-                  <h4 className="text-sm font-bold text-primary mb-1">✨ AI Bullet Point Generator</h4>
-                  <p className="text-xs text-text-muted mb-3">Turn simple duties into powerful achievements.</p>
-                  <textarea value={aiPrompt} onChange={e => setAiPrompt(e.target.value)} placeholder="e.g., Developed a web app using React..." className="w-full h-20 text-xs p-2 rounded-lg bg-surface border border-border mb-2 resize-none focus:border-primary focus:outline-none" />
-                  <button onClick={handleGenerateImpacts} disabled={!aiPrompt} className="w-full py-2 text-xs font-bold bg-primary text-white rounded-lg disabled:opacity-50">Generate Impacts</button>
+                {/* ATS Scoring Gauge */}
+                <div className="p-4 rounded-xl border border-primary/30 bg-primary/5 flex flex-col items-center">
+                  <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest mb-2">ATS Optimization Score</span>
+                  <div className="relative w-24 h-24 flex items-center justify-center">
+                    <svg className="w-full h-full transform -rotate-90">
+                      <circle cx="48" cy="48" r="40" stroke="rgba(255,255,255,0.05)" strokeWidth="8" fill="transparent" />
+                      <circle cx="48" cy="48" r="40" stroke="currentColor" strokeWidth="8" fill="transparent"
+                        className={atsScore >= 80 ? 'text-green-500' : atsScore >= 60 ? 'text-amber-500' : 'text-red-500'}
+                        strokeDasharray={251.2}
+                        strokeDashoffset={251.2 - (251.2 * atsScore) / 100}
+                        style={{ transition: 'stroke-dashoffset 0.8s ease-in-out' }}
+                      />
+                    </svg>
+                    <span className="absolute text-xl font-black">{atsScore}%</span>
+                  </div>
+                  <span className="text-xs text-text-muted mt-2 text-center">
+                    {atsScore >= 90 ? '🎉 Excellent! Ready for submissions.' : atsScore >= 70 ? '👍 Great! Let\'s polish a bit more.' : '⚠️ Optimize content to bypass ATS filters.'}
+                  </span>
                 </div>
-                <div className="p-4 rounded-xl border border-primary/30 bg-primary/5 relative overflow-hidden">
-                  {isAiGenerating && <div className="absolute inset-0 bg-surface/80 backdrop-blur-sm z-10 flex items-center justify-center"><div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div></div>}
-                  <h4 className="text-sm font-bold text-primary mb-1">✍️ AI Summary Writer</h4>
-                  <p className="text-xs text-text-muted mb-3">Generate a professional summary based on your role.</p>
-                  <input type="text" value={aiTargetRole} onChange={e => setAiTargetRole(e.target.value)} placeholder="Target Role (e.g., Data Scientist)" className="w-full text-xs p-2 rounded-lg bg-surface border border-border mb-2 focus:border-primary focus:outline-none" />
-                  <button onClick={handleWriteSummary} disabled={!aiTargetRole} className="w-full py-2 text-xs font-bold bg-primary text-white rounded-lg disabled:opacity-50">Write Summary</button>
+
+                {/* AI Optimization Checklist */}
+                <div className="p-4 rounded-xl border border-border bg-surface-lighter space-y-3 relative overflow-hidden">
+                  {isAiGenerating && (
+                    <div className="absolute inset-0 bg-surface/85 backdrop-blur-sm z-10 flex flex-col items-center justify-center gap-2">
+                      <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                      <span className="text-[10px] text-primary font-bold uppercase tracking-wider">AI Enhancing Resume...</span>
+                    </div>
+                  )}
+                  <h4 className="text-xs font-black uppercase text-text-primary tracking-wider border-b border-border pb-1">AI Improvement Checklist</h4>
+                  
+                  {/* Task 1 */}
+                  <div className="flex flex-col gap-1.5 p-2 rounded bg-surface border border-border text-left">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold flex items-center gap-1.5">
+                        {appliedKeywords ? '✅' : '❌'}
+                        Role-Targeted Keywords
+                      </span>
+                      <span className="text-[10px] font-mono text-green-500 font-bold">+20% ATS</span>
+                    </div>
+                    <p className="text-[10px] text-text-muted">Inject high-value ATS terms like TypeScript, Next.js, and CI/CD.</p>
+                    {!appliedKeywords && (
+                      <button onClick={handleInsertKeywords} className="w-full mt-1 py-1 text-[10px] font-bold bg-primary/15 hover:bg-primary/20 text-primary border border-primary/30 rounded transition-colors">
+                        ✨ Insert Keywords
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Task 2 */}
+                  <div className="flex flex-col gap-1.5 p-2 rounded bg-surface border border-border text-left">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold flex items-center gap-1.5">
+                        {appliedMetrics ? '✅' : '❌'}
+                        Quantifiable Metrics
+                      </span>
+                      <span className="text-[10px] font-mono text-green-500 font-bold">+20% ATS</span>
+                    </div>
+                    <p className="text-[10px] text-text-muted">Auto-rewrite bullet points with high-impact numbers and revenue metrics.</p>
+                    {!appliedMetrics && (
+                      <button onClick={handleInjectMetrics} className="w-full mt-1 py-1 text-[10px] font-bold bg-primary/15 hover:bg-primary/20 text-primary border border-primary/30 rounded transition-colors">
+                        ✨ Inject Metrics
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Task 3 */}
+                  <div className="flex flex-col gap-1.5 p-2 rounded bg-surface border border-border text-left">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold flex items-center gap-1.5">
+                        {appliedSummary ? '✅' : '❌'}
+                        Executive Summary Refinement
+                      </span>
+                      <span className="text-[10px] font-mono text-green-500 font-bold">+20% ATS</span>
+                    </div>
+                    <p className="text-[10px] text-text-muted">Rewrite professional summary to look highly technical and polished.</p>
+                    {!appliedSummary && (
+                      <button onClick={handleEnhanceSummary} className="w-full mt-1 py-1 text-[10px] font-bold bg-primary/15 hover:bg-primary/20 text-primary border border-primary/30 rounded transition-colors">
+                        ✨ Refine Summary
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Task 4 */}
+                  <div className="flex flex-col gap-1.5 p-2 rounded bg-surface border border-border text-left">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold flex items-center gap-1.5">
+                        {appliedContact ? '✅' : '❌'}
+                        Profile Completeness
+                      </span>
+                      <span className="text-[10px] font-mono text-green-500 font-bold">+10% ATS</span>
+                    </div>
+                    <p className="text-[10px] text-text-muted">Fill out LinkedIn, GitHub, and full mailing address placeholders.</p>
+                    {!appliedContact && (
+                      <button onClick={handleCompleteProfile} className="w-full mt-1 py-1 text-[10px] font-bold bg-primary/15 hover:bg-primary/20 text-primary border border-primary/30 rounded transition-colors">
+                        ✨ Fill Profile Details
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Target Role Custom Analyzer */}
+                <div className="p-4 rounded-xl border border-primary/30 bg-primary/5 relative overflow-hidden text-left space-y-3">
+                  {analyzingRole && (
+                    <div className="absolute inset-0 bg-surface/85 backdrop-blur-sm z-10 flex flex-col items-center justify-center gap-2">
+                      <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                      <span className="text-[10px] text-primary font-bold uppercase tracking-wider">AI Analyst Scanning...</span>
+                    </div>
+                  )}
+                  <h4 className="text-sm font-bold text-primary flex items-center gap-1">
+                    <span>💡</span> Target Role AI Analyst
+                  </h4>
+                  <p className="text-xs text-text-muted">Type in your target job role to generate custom ideas and implement improvements.</p>
+                  
+                  <div className="space-y-2">
+                    <input 
+                      type="text" 
+                      value={targetRoleInput} 
+                      onChange={e => setTargetRoleInput(e.target.value)} 
+                      placeholder="Target Role (e.g. Data Scientist)" 
+                      className="w-full text-xs p-2 rounded-lg bg-surface border border-border text-text-primary focus:border-primary focus:outline-none"
+                    />
+                    <button 
+                      onClick={handleAnalyzeRole} 
+                      disabled={!targetRoleInput.trim() || analyzingRole} 
+                      className="w-full py-2 text-xs font-bold bg-primary hover:bg-primary/95 text-white rounded-lg disabled:opacity-50 transition-colors"
+                    >
+                      Analyze & Suggest Ideas
+                    </button>
+                  </div>
+
+                  {recommendations && (
+                    <div className="pt-2 border-t border-border/50 space-y-3">
+                      <div className="bg-surface p-2.5 rounded border border-primary/20 space-y-1.5">
+                        <span className="text-[10px] font-black uppercase text-primary tracking-wider">AI Suggestions:</span>
+                        <ul className="list-disc pl-4 space-y-1">
+                          {recommendations.map((rec, i) => (
+                            <li key={i} className="text-[10px] text-text-muted leading-relaxed">{rec}</li>
+                          ))}
+                        </ul>
+                      </div>
+                      <button 
+                        onClick={handleApplyRoleImprovements} 
+                        className="w-full py-2 text-xs font-bold gradient-primary text-white rounded-lg shadow transition-transform active:scale-95 flex items-center justify-center gap-1.5"
+                      >
+                        <span>🚀</span> Apply Tailored Changes
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             )}

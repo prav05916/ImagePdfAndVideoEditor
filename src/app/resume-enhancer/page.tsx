@@ -2,12 +2,12 @@ import type { Metadata } from 'next';
 import ResumeEnhancerClient from './ResumeEnhancerClient';
 
 export const metadata: Metadata = {
-  title: 'Resume Photo Enhancer - Professional AI Headshot & CV Photo Tool',
-  description: 'Improve your resume photo with AI. Enhance clarity, adjust lighting, and get a professional look for your job application. Create perfect CV photos online for free.',
-  keywords: ['resume photo enhancer', 'professional headshot tool', 'AI photo enhancer', 'CV photo editor', 'passport photo maker', 'enhance resume photo free', 'professional CV photo maker'],
+  title: 'AI Resume Builder - ATS Optimizer & Free CV Maker Online',
+  description: 'Create an optimized, professional resume with AI. Live ATS score checker, targeted keyword integration, performance metrics optimization, and clean PDF exports for job seekers.',
+  keywords: ['AI resume builder', 'ATS resume optimizer', 'free CV maker online', 'ATS score checker', 'professional resume template', 'resume keyword optimization', 'metrics-driven CV builder'],
   openGraph: {
-    title: 'Resume Photo Enhancer - Professional AI Headshot Tool',
-    description: 'Get the perfect professional photo for your resume. AI-powered enhancement for job seekers.',
+    title: 'AI Resume Builder - ATS Optimizer & Free CV Maker Online',
+    description: 'Create high-scoring ATS-optimized resumes. Get dynamic suggestions, keyword improvements, and export professional PDFs.',
     images: [{ url: "/og-image.png", width: 1200, height: 630 }],
   },
   alternates: {
@@ -24,11 +24,11 @@ export default function Page() {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "SoftwareApplication",
-            "name": "Resume Photo Enhancer",
+            "name": "AI Resume Builder & ATS Optimizer",
             "operatingSystem": "Web",
-            "applicationCategory": "DesignApplication",
+            "applicationCategory": "BusinessApplication",
             "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-            "description": "Get the perfect professional photo for your resume. AI-powered enhancement for job seekers."
+            "description": "Create high-scoring ATS-optimized resumes with dynamic AI suggestions and templates."
           }),
         }}
       />
