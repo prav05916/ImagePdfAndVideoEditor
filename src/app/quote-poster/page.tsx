@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     images: [{ url: '/og-quote-poster.png', width: 1200, height: 630 }],
   },
   alternates: {
-    canonical: 'https://pixelcraft.studio/quote-poster',
+    canonical: 'https://shivanshstudio.com/quote-poster',
   },
 };
 

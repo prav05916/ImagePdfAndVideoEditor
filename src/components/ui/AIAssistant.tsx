@@ -38,8 +38,8 @@ const getContextualPreamble = (pathname: string, locale: string) => {
         : "Hi! Need a quote for your poster? Just tell me the topic (e.g., inspiration, love, success) and I'll generate one for you!";
     default:
       return isHi
-        ? "नमस्ते! मैं PixelCraft Studio का एआई असिस्टेंट हूँ। मैं आपको किसी भी टूल को इस्तेमाल करने में या डिज़ाइन से जुड़े सुझाव देने में मदद कर सकता हूँ। मैं आपकी क्या मदद करूँ?"
-        : "Hello! I'm your PixelCraft Studio AI Assistant. I can help you use any of our tools or give you design tips. How can I help you today?";
+        ? "नमस्ते! मैं ShivanshStudio का एआई असिस्टेंट हूँ। मैं आपको किसी भी टूल को इस्तेमाल करने में या डिज़ाइन से जुड़े सुझाव देने में मदद कर सकता हूँ। मैं आपकी क्या मदद करूँ?"
+        : "Hello! I'm your ShivanshStudio AI Assistant. I can help you use any of our tools or give you design tips. How can I help you today?";
   }
 };
 
@@ -187,7 +187,7 @@ export default function AIAssistant() {
                 <div className="flex items-center gap-2">
                   <div className="text-xl">✨</div>
                   <div>
-                    <h3 className="font-bold text-sm">PixelCraft AI</h3>
+                    <h3 className="font-bold text-sm">ShivanshStudio AI</h3>
                     <p className="text-xs text-white/80">Online & ready to help</p>
                   </div>
                 </div>

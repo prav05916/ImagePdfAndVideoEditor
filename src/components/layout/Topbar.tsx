@@ -3,6 +3,8 @@
 import { useAppStore } from '@/lib/store';
 import { t } from '@/lib/i18n';
 import { motion } from 'framer-motion';
+import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Topbar() {
   const { locale, setLocale, toggleSidebar } = useAppStore();
@@ -60,10 +62,10 @@ export default function Topbar() {
             </button>
           </div>
 
-          {/* User avatar */}
-          <div className="w-9 h-9 rounded-full gradient-primary flex items-center justify-center text-white text-sm font-bold cursor-pointer hover:scale-105 transition-transform shadow-lg">
-            U
-          </div>
+          {/* User avatar / Logo */}
+          <Link href="/" className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center cursor-pointer hover:scale-105 transition-transform shadow-lg bg-white border border-border">
+            <Image src="/logo.png" alt="Logo" width={36} height={36} className="object-cover" />
+          </Link>
         </div>
       </div>
     </header>

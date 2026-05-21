@@ -8,6 +8,6 @@ export default function robots(): MetadataRoute.Robots {
         allow: '/',
       },
     ],
-    sitemap: 'https://pixelcraft.studio/sitemap.xml',
+    sitemap: 'https://shivanshstudio.com/sitemap.xml',
   };
 }

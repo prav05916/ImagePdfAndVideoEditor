@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     images: [{ url: '/og-resume-enhancer.png', width: 1200, height: 630 }],
   },
   alternates: {
-    canonical: 'https://pixelcraft.studio/resume-enhancer',
+    canonical: 'https://shivanshstudio.com/resume-enhancer',
   },
 };
 

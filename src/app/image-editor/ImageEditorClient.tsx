@@ -8,7 +8,7 @@ import { t } from '@/lib/i18n';
 import PageHeader from '@/components/shared/PageHeader';
 import FileUpload from '@/components/ui/FileUpload';
 
-type Tab = 'crop' | 'resize' | 'adjust' | 'transform' | 'enhance';
+type Tab = 'crop' | 'resize' | 'adjust' | 'transform' | 'enhance' | 'text';
 
 export default function ImageEditorPage() {
   const { locale } = useAppStore();
@@ -43,6 +43,15 @@ export default function ImageEditorPage() {
 
   // Enhance state
   const [enhanced, setEnhanced] = useState(false);
+
+  // Text overlay state
+  const [textContent, setTextContent] = useState('ShivanshStudio');
+  const [textColor, setTextColor] = useState('#ffffff');
+  const [textSize, setTextSize] = useState(48);
+  const [textX, setTextX] = useState(50);
+  const [textY, setTextY] = useState(90);
+  const [textFont, setTextFont] = useState('Inter');
+  const [textAlign, setTextAlign] = useState<CanvasTextAlign>('center');
 
   const handleFileSelect = (file: File) => {
     const reader = new FileReader();
@@ -92,6 +101,49 @@ export default function ImageEditorPage() {
     if (prst === 'invert') filterStr += ' invert(100%)';
     ctx.filter = filterStr;
 
+    ctx.drawImage(img, -img.width / 2, -img.height / 2);
+    ctx.restore();
+  }, []);
+
+  const applyTextOverlay = useCallback((txt: string, color: string, size: number, xPct: number, yPct: number, font: string, align: CanvasTextAlign) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.save();
+    ctx.font = `bold ${size}px ${font}, sans-serif`;
+    ctx.fillStyle = color;
+    ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+    ctx.lineWidth = size / 12;
+    ctx.textAlign = align;
+    ctx.textBaseline = 'bottom';
+    const x = (canvas.width * xPct) / 100;
+    const y = (canvas.height * yPct) / 100;
+    ctx.strokeText(txt, x, y);
+    ctx.fillText(txt, x, y);
+    ctx.restore();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Dummy drawImage ref holder to avoid lint error
+  const _drawImage = useCallback((img: HTMLImageElement | null, b: number, c: number, s: number, rot: number, fh: boolean, fv: boolean, prst: string, enh: boolean) => {
+    const canvas = canvasRef.current;
+    if (!canvas || !img) return;
+    const isRotated = rot === 90 || rot === 270;
+    canvas.width = isRotated ? img.height : img.width;
+    canvas.height = isRotated ? img.width : img.height;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.save();
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+    ctx.rotate((rot * Math.PI) / 180);
+    ctx.scale(fh ? -1 : 1, fv ? -1 : 1);
+    let filterStr = `brightness(${100 + b}%) contrast(${100 + c}%) saturate(${100 + s}%)`;
+    if (prst === 'grayscale') filterStr += ' grayscale(100%)';
+    if (prst === 'sepia') filterStr += ' sepia(100%)';
+    if (prst === 'invert') filterStr += ' invert(100%)';
+    ctx.filter = filterStr;
     ctx.drawImage(img, -img.width / 2, -img.height / 2);
     ctx.restore();
 
@@ -176,17 +228,18 @@ export default function ImageEditorPage() {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const link = document.createElement('a');
-    link.download = 'pixelcraft-edited.png';
+    link.download = 'shivanshstudio-edited.png';
     link.href = canvas.toDataURL('image/png');
     link.click();
   };
 
-  const tabs: { key: Tab; label: string }[] = [
-    { key: 'crop', label: t(locale, 'imageEditor.crop') },
-    { key: 'resize', label: t(locale, 'imageEditor.resize') },
-    { key: 'adjust', label: t(locale, 'imageEditor.adjust') },
-    { key: 'transform', label: 'Transform' },
-    { key: 'enhance', label: t(locale, 'imageEditor.enhance') },
+  const tabs: { key: Tab; label: string; icon: string }[] = [
+    { key: 'adjust', label: t(locale, 'imageEditor.adjust'), icon: '🎨' },
+    { key: 'crop', label: t(locale, 'imageEditor.crop'), icon: '✂️' },
+    { key: 'resize', label: t(locale, 'imageEditor.resize'), icon: '📐' },
+    { key: 'transform', label: 'Transform', icon: '🔄' },
+    { key: 'enhance', label: t(locale, 'imageEditor.enhance'), icon: '✨' },
+    { key: 'text', label: 'Text', icon: '🅣' },
   ];
 
   const Slider = ({ label, value, onChange, min = -100, max = 100 }: { label: string; value: number; onChange: (v: number) => void; min?: number; max?: number }) => (
@@ -258,18 +311,18 @@ export default function ImageEditorPage() {
           {/* Controls */}
           <div className="space-y-4">
             {/* Tabs */}
-            <div className="glass rounded-2xl p-1 flex gap-1">
+            <div className="glass rounded-2xl p-1 grid grid-cols-3 gap-1">
               {tabs.map((tab) => (
                 <button
                   key={tab.key}
                   onClick={() => { setActiveTab(tab.key); if (tab.key === 'crop') setShowCropper(true); else setShowCropper(false); }}
-                  className={`flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                  className={`py-2 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1 ${
                     activeTab === tab.key
                       ? 'gradient-primary text-white shadow-lg'
-                      : 'text-text-muted hover:text-text-secondary'
+                      : 'text-text-muted hover:text-text-secondary hover:bg-white/5'
                   }`}
                 >
-                  {tab.label}
+                  <span>{tab.icon}</span><span>{tab.label}</span>
                 </button>
               ))}
             </div>
@@ -405,6 +458,63 @@ export default function ImageEditorPage() {
                       }`}
                     >
                       {enhanced ? `✓ ${t(locale, 'imageEditor.enhanced')}` : t(locale, 'imageEditor.enhanceQuality')}
+                    </button>
+                  </div>
+                )}
+
+                {activeTab === 'text' && (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-xs text-text-secondary block mb-1">Text Content</label>
+                      <input value={textContent} onChange={e => setTextContent(e.target.value)}
+                        className="w-full px-3 py-2 rounded-lg bg-surface-lighter border border-border text-sm text-text-primary focus:outline-none focus:border-primary" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs text-text-secondary block mb-1">Color</label>
+                        <input type="color" value={textColor} onChange={e => setTextColor(e.target.value)}
+                          className="w-full h-10 rounded-lg cursor-pointer bg-surface-lighter border border-border" />
+                      </div>
+                      <div>
+                        <label className="text-xs text-text-secondary block mb-1">Font Size</label>
+                        <input type="number" value={textSize} min={10} max={300} onChange={e => setTextSize(+e.target.value)}
+                          className="w-full px-3 py-2 rounded-lg bg-surface-lighter border border-border text-sm text-text-primary focus:outline-none" />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-xs text-text-secondary block mb-1">Font</label>
+                      <select value={textFont} onChange={e => setTextFont(e.target.value)}
+                        className="w-full px-3 py-2 rounded-lg bg-surface-lighter border border-border text-sm text-text-primary focus:outline-none">
+                        {['Inter', 'Georgia', 'Arial', 'Times New Roman', 'Courier New', 'Impact'].map(f => <option key={f} value={f}>{f}</option>)}
+                      </select>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs text-text-secondary block mb-1">X Position %</label>
+                        <input type="number" value={textX} min={0} max={100} onChange={e => setTextX(+e.target.value)}
+                          className="w-full px-3 py-2 rounded-lg bg-surface-lighter border border-border text-sm text-text-primary focus:outline-none" />
+                      </div>
+                      <div>
+                        <label className="text-xs text-text-secondary block mb-1">Y Position %</label>
+                        <input type="number" value={textY} min={0} max={100} onChange={e => setTextY(+e.target.value)}
+                          className="w-full px-3 py-2 rounded-lg bg-surface-lighter border border-border text-sm text-text-primary focus:outline-none" />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-xs text-text-secondary block mb-2">Alignment</label>
+                      <div className="grid grid-cols-3 gap-2">
+                        {(['left', 'center', 'right'] as CanvasTextAlign[]).map(a => (
+                          <button key={a} onClick={() => setTextAlign(a)}
+                            className={`py-2 rounded-lg text-xs font-semibold capitalize transition-all ${textAlign === a ? 'gradient-primary text-white' : 'bg-surface-lighter text-text-muted hover:text-text-secondary'}`}>
+                            {a}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => applyTextOverlay(textContent, textColor, textSize, textX, textY, textFont, textAlign)}
+                      className="w-full py-3 gradient-primary text-white rounded-xl font-semibold text-sm shadow-lg hover:opacity-90 transition-opacity">
+                      Apply Text to Image
                     </button>
                   </div>
                 )}

@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "PixelCraft Studio",
+    "appName": "ShivanshStudio",
     "tagline": "Create. Edit. Inspire.",
     "download": "Download",
     "preview": "Preview",
@@ -57,7 +57,7 @@
     "initFfmpeg": "Initializing Editor Toolkit..."
   },
   "dashboard": {
-    "title": "Welcome to PixelCraft Studio",
+    "title": "Welcome to ShivanshStudio",
     "subtitle": "Your all-in-one creative design platform",
     "quickActions": "Quick Actions",
     "recentProjects": "Recent Projects",
@@ -193,21 +193,21 @@
     "generatePdf": "Download PDF Resume"
   },
   "seo": {
-    "homeTitle": "PixelCraft Studio - All-in-One Image Editor & Design Platform",
-    "homeDesc": "Create stunning wedding cards, edit images, generate social media posts, and more with PixelCraft Studio. Free online design tools with Hindi & English support.",
-    "editorTitle": "Free Online Image Editor - Resize, Crop & Enhance Photos | PixelCraft Studio",
+    "homeTitle": "ShivanshStudio - All-in-One Image Editor & Design Platform",
+    "homeDesc": "Create stunning wedding cards, edit images, generate social media posts, and more with ShivanshStudio. Free online design tools with Hindi & English support.",
+    "editorTitle": "Free Online Image Editor - Resize, Crop & Enhance Photos | ShivanshStudio",
     "editorDesc": "Edit your images online for free. Resize, crop, adjust brightness, contrast, saturation and enhance quality with AI-powered tools.",
-    "weddingTitle": "Indian Wedding Card Generator - Create Beautiful Invitations | PixelCraft Studio",
+    "weddingTitle": "Indian Wedding Card Generator - Create Beautiful Invitations | ShivanshStudio",
     "weddingDesc": "Design stunning Indian wedding invitation cards in English and Hindi. Choose from traditional, modern, and royal templates.",
-    "invitationTitle": "Invitation Card Maker - Birthday, Engagement & More | PixelCraft Studio",
+    "invitationTitle": "Invitation Card Maker - Birthday, Engagement & More | ShivanshStudio",
     "invitationDesc": "Create beautiful invitation cards for birthdays, engagements, baby showers and more. Free online invitation maker.",
-    "socialTitle": "Social Media Post Generator - Instagram Templates | PixelCraft Studio",
+    "socialTitle": "Social Media Post Generator - Instagram Templates | ShivanshStudio",
     "socialDesc": "Create stunning Instagram-ready social media posts with beautiful templates. Free online social media design tool.",
-    "bgRemoverTitle": "AI Background Remover - Remove Image Backgrounds Free | PixelCraft Studio",
+    "bgRemoverTitle": "AI Background Remover - Remove Image Backgrounds Free | ShivanshStudio",
     "bgRemoverDesc": "Remove image backgrounds instantly with AI technology. Get transparent, white, or custom color backgrounds.",
-    "quoteTitle": "Quote & Poster Generator - Create Inspiring Designs | PixelCraft Studio",
+    "quoteTitle": "Quote & Poster Generator - Create Inspiring Designs | ShivanshStudio",
     "quoteDesc": "Design beautiful quote posters and inspirational art. Multiple styles, fonts, and backgrounds available.",
-    "resumeTitle": "Resume Photo Enhancer - Professional Passport Photos | PixelCraft Studio",
+    "resumeTitle": "Resume Photo Enhancer - Professional Passport Photos | ShivanshStudio",
     "resumeDesc": "Enhance your resume and passport photos professionally. Auto crop, lighting adjustment, and background cleanup."
   }
 }

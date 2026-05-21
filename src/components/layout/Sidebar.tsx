@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useAppStore } from '@/lib/store';
 import { t } from '@/lib/i18n';
 import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
 
 const navItems = [
   { key: 'nav.dashboard', href: '/', icon: '🏠' },
@@ -46,9 +47,7 @@ export default function Sidebar() {
         {/* Logo */}
         <div className="p-6 border-b border-border">
           <Link href="/" onClick={() => setSidebarOpen(false)} className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center text-white font-bold text-lg shadow-lg">
-              P
-            </div>
+            <Image src="/logo.png" alt="ShivanshStudio Logo" width={40} height={40} className="rounded-xl shadow-lg object-cover bg-white" />
             <div>
               <h1 className="font-bold text-lg text-text-primary tracking-tight">
                 {t(locale, 'common.appName')}
@@ -90,7 +89,7 @@ export default function Sidebar() {
         {/* Footer */}
         <div className="p-4 border-t border-border">
           <div className="glass-light rounded-xl p-4 text-center">
-            <p className="text-xs text-text-muted">PixelCraft Studio v1.0</p>
+            <p className="text-xs text-text-muted">ShivanshStudio v1.0</p>
             <p className="text-xs text-text-muted mt-1">© 2026</p>
           </div>
         </div>

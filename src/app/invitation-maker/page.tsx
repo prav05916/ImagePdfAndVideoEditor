@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     images: [{ url: '/og-invitation-maker.png', width: 1200, height: 630 }],
   },
   alternates: {
-    canonical: 'https://pixelcraft.studio/invitation-maker',
+    canonical: 'https://shivanshstudio.com/invitation-maker',
   },
 };
 

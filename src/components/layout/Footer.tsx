@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 const Footer = () => {
   return (
@@ -6,9 +7,12 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
         {/* About Section */}
         <div className="space-y-4">
-          <h3 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-light to-secondary-light">
-            PixelCraft Studio
-          </h3>
+          <div className="flex items-center gap-2">
+            <Image src="/logo.png" alt="Logo" width={32} height={32} className="rounded-lg object-cover bg-white" />
+            <h3 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-light to-secondary-light">
+              ShivanshStudio
+            </h3>
+          </div>
           <p className="text-text-muted text-sm leading-relaxed">
             The ultimate all-in-one design platform for wedding cards, image editing, video creation, and more. Free, fast, and professional.
           </p>
@@ -56,7 +60,7 @@ const Footer = () => {
       </div>
       
       <div className="max-w-7xl mx-auto mt-12 pt-8 border-t border-border flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-text-muted">
-        <p>© {new Date().getFullYear()} PixelCraft Studio. All rights reserved.</p>
+        <p>© {new Date().getFullYear()} ShivanshStudio. All rights reserved.</p>
         <p>Made with ❤️ in India by Er Praveeen Kumar</p>
       </div>
     </footer>

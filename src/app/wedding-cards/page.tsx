@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     images: [{ url: '/og-wedding-cards.png', width: 1200, height: 630 }],
   },
   alternates: {
-    canonical: 'https://pixelcraft.studio/wedding-cards',
+    canonical: 'https://shivanshstudio.com/wedding-cards',
   },
 };
 

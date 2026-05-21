@@ -6,14 +6,14 @@ import { useAppStore } from '@/lib/store';
 import { t } from '@/lib/i18n';
 
 const tools = [
-  { key: 'nav.imageEditor', href: '/image-editor', icon: '🖼️', color: 'from-indigo-500 to-purple-600' },
-  { key: 'nav.videoEditor', href: '/video-editor', icon: '🎬', color: 'from-blue-500 to-indigo-600' },
-  { key: 'nav.weddingCards', href: '/wedding-cards', icon: '💍', color: 'from-amber-500 to-orange-600' },
-  { key: 'nav.invitationMaker', href: '/invitation-maker', icon: '🎉', color: 'from-pink-500 to-rose-600' },
-  { key: 'nav.socialMedia', href: '/social-media', icon: '📸', color: 'from-cyan-500 to-blue-600' },
-  { key: 'nav.bgRemover', href: '/background-remover', icon: '✂️', color: 'from-emerald-500 to-teal-600' },
-  { key: 'nav.quotePoster', href: '/quote-poster', icon: '✍️', color: 'from-violet-500 to-fuchsia-600' },
-  { key: 'nav.resumeEnhancer', href: '/resume-enhancer', icon: '🧾', color: 'from-slate-500 to-gray-600' },
+  { key: 'nav.videoEditor', href: '/video-editor', icon: '🎬', color: 'from-blue-500 to-indigo-600', desc: 'Timeline editing, merge clips, and apply 20+ pro filters.', tag: 'PRO' },
+  { key: 'nav.resumeEnhancer', href: '/resume-enhancer', icon: '🧾', color: 'from-slate-500 to-gray-600', desc: 'ATS optimized resume builder and strict document checker.', tag: 'HOT' },
+  { key: 'nav.imageEditor', href: '/image-editor', icon: '🖼️', color: 'from-indigo-500 to-purple-600', desc: 'Add text, watermarks, and tune colors professionally.' },
+  { key: 'nav.bgRemover', href: '/background-remover', icon: '✂️', color: 'from-emerald-500 to-teal-600', desc: 'Instant AI-powered background removal.' },
+  { key: 'nav.weddingCards', href: '/wedding-cards', icon: '💍', color: 'from-amber-500 to-orange-600', desc: 'Beautifully crafted Indian wedding templates.' },
+  { key: 'nav.invitationMaker', href: '/invitation-maker', icon: '🎉', color: 'from-pink-500 to-rose-600', desc: 'Create stunning invitations for any event.' },
+  { key: 'nav.socialMedia', href: '/social-media', icon: '📸', color: 'from-cyan-500 to-blue-600', desc: 'Generate engaging social media posts easily.' },
+  { key: 'nav.quotePoster', href: '/quote-poster', icon: '✍️', color: 'from-violet-500 to-fuchsia-600', desc: 'Design inspiring and highly shareable quote posters.' },
 ];
 
 const stats = [
@@ -97,17 +97,34 @@ export default function Dashboard() {
         {tools.map((tool) => (
           <motion.div key={tool.href} variants={item}>
             <Link href={tool.href}>
-              <div className="glass rounded-xl sm:rounded-2xl p-4 sm:p-6 hover:scale-[1.03] transition-all duration-300 group cursor-pointer hover:glow h-full flex flex-col">
-                <div className={`w-10 h-10 sm:w-14 sm:h-14 rounded-lg sm:rounded-2xl bg-gradient-to-br ${tool.color} flex items-center justify-center text-xl sm:text-2xl mb-3 sm:mb-4 group-hover:scale-110 transition-transform shadow-lg`}>
+              <div className="relative glass bg-white/5 dark:bg-black/20 rounded-2xl p-5 sm:p-6 transition-all duration-300 group cursor-pointer hover:bg-white/10 dark:hover:bg-black/40 hover:-translate-y-1 hover:shadow-2xl border border-border overflow-hidden h-full flex flex-col">
+                {/* Background ambient glow */}
+                <div className={`absolute -right-10 -top-10 w-32 h-32 bg-gradient-to-br ${tool.color} rounded-full blur-3xl opacity-0 group-hover:opacity-20 transition-opacity duration-500`} />
+
+                {tool.tag && (
+                  <div className="absolute top-4 right-4">
+                    <span className={`text-[9px] font-black tracking-widest uppercase px-2.5 py-1 rounded-full ${tool.tag === 'PRO' ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg shadow-blue-500/30' : 'bg-gradient-to-r from-rose-500 to-orange-500 text-white shadow-lg shadow-rose-500/30'}`}>
+                      {tool.tag}
+                    </span>
+                  </div>
+                )}
+
+                <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br ${tool.color} flex items-center justify-center text-2xl mb-4 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 shadow-lg relative z-10`}>
                   {tool.icon}
                 </div>
-                <h3 className="font-semibold text-xs sm:text-base text-text-primary group-hover:text-primary-light transition-colors line-clamp-2">
+                
+                <h3 className="font-bold text-sm sm:text-lg text-text-primary mb-2 relative z-10 group-hover:text-primary-light transition-colors">
                   {t(locale, tool.key)}
                 </h3>
-                <div className="mt-3 flex items-center text-xs text-primary-light opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span>Open tool</span>
-                  <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                
+                <p className="text-xs text-text-muted flex-1 relative z-10 leading-relaxed">
+                  {tool.desc}
+                </p>
+
+                <div className="mt-4 pt-4 border-t border-border/50 flex items-center justify-between text-xs font-bold text-primary-light opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0 relative z-10">
+                  <span>Launch Tool</span>
+                  <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                   </svg>
                 </div>
               </div>

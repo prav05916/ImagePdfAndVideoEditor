@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     images: [{ url: '/og-video-editor.png', width: 1200, height: 630 }],
   },
   alternates: {
-    canonical: 'https://pixelcraft.studio/video-editor',
+    canonical: 'https://shivanshstudio.com/video-editor',
   },
 };
 

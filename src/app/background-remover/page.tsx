@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     images: [{ url: '/og-bg-remover.png', width: 1200, height: 630 }],
   },
   alternates: {
-    canonical: 'https://pixelcraft.studio/background-remover',
+    canonical: 'https://shivanshstudio.com/background-remover',
   },
 };
 

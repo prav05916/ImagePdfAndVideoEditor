@@ -7,13 +7,13 @@ import Footer from "@/components/layout/Footer";
 import AIAssistant from "@/components/ui/AIAssistant";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://pixelcraft.studio"),
+  metadataBase: new URL("https://shivanshstudio.com"),
   title: {
-    default: "PixelCraft Studio - All-in-One Image Editor & Design Platform",
-    template: "%s | PixelCraft Studio",
+    default: "ShivanshStudio - All-in-One Image Editor & Design Platform",
+    template: "%s | ShivanshStudio",
   },
   description:
-    "Create stunning wedding cards, edit images, generate social media posts, and more with PixelCraft Studio. Free online design tools with Hindi & English support.",
+    "Create stunning wedding cards, edit images, generate social media posts, and more with ShivanshStudio. Free online design tools with Hindi & English support.",
   keywords: [
     "image editor",
     "wedding card generator",
@@ -27,16 +27,16 @@ export const metadata: Metadata = {
     "Hindi wedding invitation",
   ],
   openGraph: {
-    title: "PixelCraft Studio - All-in-One Image Editor & Design Platform",
+    title: "ShivanshStudio - All-in-One Image Editor & Design Platform",
     description:
       "Create stunning wedding cards, edit images, generate social media posts, and more.",
     type: "website",
-    siteName: "PixelCraft Studio",
+    siteName: "ShivanshStudio",
     locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
-    title: "PixelCraft Studio - All-in-One Image Editor & Design Platform",
+    title: "ShivanshStudio - All-in-One Image Editor & Design Platform",
     description:
       "Create stunning wedding cards, edit images, generate social media posts, and more.",
   },
@@ -105,8 +105,8 @@ export default function RootLayout({
           {JSON.stringify({
             "@context": "https://schema.org",
             "@type": "WebApplication",
-            "name": "PixelCraft Studio",
-            "url": "https://pixelcraft.studio",
+            "name": "ShivanshStudio",
+            "url": "https://shivanshstudio.com",
             "description": "All-in-one image editor, video editor, and wedding card generator.",
             "applicationCategory": "DesignApplication",
             "operatingSystem": "Web",
