@@ -65,6 +65,152 @@ function PreviewVideo({ src, isPlaying, timelineTime, startAt, trimStart, trimEn
 
     // Calculate local playhead time
     const clipTime = (timelineTime - startAt) * speed + trimStart;
+
+    // Sync current time if it drifts too much
+    if (Math.abs(video.currentTime - clipTime) > 0.25) {
+      video.currentTime = Math.max(trimStart, Math.min(trimEnd, clipTime));
+    }
+
+    video.volume = volume;
+    video.playbackRate = speed;
+
+    if (isPlaying) {
+      if (video.paused) {
+        video.play().catch(() => {});
+      }
+    } else {
+      if (!video.paused) {
+        video.pause();
+      }
+    }
+  }, [isPlaying, timelineTime, startAt, trimStart, trimEnd, volume, speed]);
+
+  return (
+    <video
+      ref={ref}
+      src={src}
+      className="w-full h-full object-cover"
+      muted={volume === 0}
+      playsInline
+    />
+  );
+}
+
+// Child component for frame-accurate background audio playback sync
+interface PreviewAudioProps {
+  src: string;
+  isPlaying: boolean;
+  timelineTime: number;
+  startAt: number;
+  trimStart: number;
+  trimEnd: number;
+  volume: number;
+  speed: number;
+}
+
+function PreviewAudio({ src, isPlaying, timelineTime, startAt, trimStart, trimEnd, volume, speed }: PreviewAudioProps) {
+  const ref = useRef<HTMLAudioElement>(null);
+
+  useEffect(() => {
+    const audio = ref.current;
+    if (!audio) return;
+
+    const clipTime = (timelineTime - startAt) * speed + trimStart;
+
+    if (Math.abs(audio.currentTime - clipTime) > 0.25) {
+      audio.currentTime = Math.max(trimStart, Math.min(trimEnd, clipTime));
+    }
+
+    audio.volume = volume;
+    audio.playbackRate = speed;
+
+    if (isPlaying) {
+      if (audio.paused) {
+        audio.play().catch(() => {});
+      }
+    } else {
+      if (!audio.paused) {
+        audio.pause();
+      }
+    }
+  }, [isPlaying, timelineTime, startAt, trimStart, trimEnd, volume, speed]);
+
+  return (
+    <audio
+      ref={ref}
+      src={src}
+      muted={volume === 0}
+    />
+  );
+}
+
+export default function VideoEditorClient() {
+
+import { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useAppStore } from '@/lib/store';
+import { FFmpeg } from '@ffmpeg/ffmpeg';
+import { fetchFile, toBlobURL } from '@ffmpeg/util';
+
+// Advanced Types for CapCut clone
+type TrackType = 'video' | 'audio' | 'text' | 'effect';
+interface TimelineTrack {
+  id: string;
+  type: TrackType;
+  clips: MediaClip[];
+}
+
+interface MediaClip {
+  id: string;
+  file?: File;
+  fileUrl?: string;
+  type: TrackType;
+  name: string;
+  duration: number; // original duration
+  startAt: number; // position on timeline
+  trimStart: number; // cut start
+  trimEnd: number; // cut end
+  // Transform
+  scale: number;
+  rotation: number;
+  posX: number;
+  posY: number;
+  opacity: number;
+  // Audio
+  volume: number;
+  speed?: number;
+  // Text specific
+  text?: string;
+  color?: string;
+  fontFamily?: string;
+  textShadow?: string;
+  // Image specific
+  isImage?: boolean;
+  // Effect filter
+  filter?: string;
+}
+
+// Child component for frame-accurate HTML5 Video playback sync
+interface PreviewVideoProps {
+  src: string;
+  isPlaying: boolean;
+  timelineTime: number;
+  startAt: number;
+  trimStart: number;
+  trimEnd: number;
+  volume: number;
+  speed: number;
+}
+
+function PreviewVideo({ src, isPlaying, timelineTime, startAt, trimStart, trimEnd, volume, speed }: PreviewVideoProps) {
+  const ref = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = ref.current;
+    if (!video) return;
+
+    // Calculate local playhead time
+    const clipTime = (timelineTime - startAt) * speed + trimStart;
     
     // Sync current time if it drifts too much
     if (Math.abs(video.currentTime - clipTime) > 0.25) {

@@ -89,17 +89,19 @@ export default function RootLayout({
           <AIAssistant />
         </div>
 
-        {/* Microsoft Clarity - Standard implementation with afterInteractive */}
-        <Script id="microsoft-clarity" strategy="afterInteractive">
-          {`
-            (function(c,l,a,r,i,t,y){
-                c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-                t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-                t.crossOrigin="anonymous";
-                y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-            })(window, document, "clarity", "script", "w1qfvyn1or");
-          `}
-        </Script>
+        {/* Microsoft Clarity - Standard implementation with afterInteractive and crossorigin */}
+        <Script id="microsoft-clarity" strategy="afterInteractive" src="https://www.clarity.ms/tag/w1qfvyn1or" crossOrigin="anonymous" />
+        <Script
+          id="custom-clarity"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `(function(c,l,a,r,i,t,y){
+              c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+              t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+              y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+            })(window, document, "clarity", "script", "wuk7mjculr");`
+          }}
+        />
 
         {/* Global Structured Data (JSON-LD) */}
         <Script id="json-ld" type="application/ld+json" strategy="afterInteractive">
