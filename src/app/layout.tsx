@@ -7,7 +7,7 @@ import Footer from "@/components/layout/Footer";
 import AIAssistant from "@/components/ui/AIAssistant";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://shivanshstudio.com"),
+  metadataBase: new URL("https://www.shivansh-studio.store"),
   title: {
     default: "ShivanshStudio - All-in-One Image Editor & Design Platform",
     template: "%s | ShivanshStudio",
@@ -107,7 +107,7 @@ export default function RootLayout({
             "@context": "https://schema.org",
             "@type": "WebApplication",
             "name": "ShivanshStudio",
-            "url": "https://shivanshstudio.com",
+            "url": "https://www.shivansh-studio.store",
             "description": "All-in-one image editor, video editor, and wedding card generator.",
             "applicationCategory": "DesignApplication",
             "operatingSystem": "Web",

@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'ShivanshStudio - Premium Creative Suite',
     description: 'Create stunning wedding cards, edit videos, enhance images, and generate social media posts.',
-    url: 'https://shivanshstudio.com',
+    url: 'https://www.shivansh-studio.store',
     siteName: 'ShivanshStudio',
     images: [
       { 
@@ -44,10 +44,10 @@ export default function Page() {
             "@context": "https://schema.org",
             "@type": "WebSite",
             "name": "ShivanshStudio",
-            "url": "https://shivanshstudio.com",
+            "url": "https://www.shivansh-studio.store",
             "potentialAction": {
               "@type": "SearchAction",
-              "target": "https://shivanshstudio.com/search?q={search_term_string}",
+              "target": "https://www.shivansh-studio.store/search?q={search_term_string}",
               "query-input": "required name=search_term_string"
             }
           }),

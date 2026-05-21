@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     images: [{ url: "/og-image.png", width: 1200, height: 630 }],
   },
   alternates: {
-    canonical: 'https://shivanshstudio.com/social-media',
+    canonical: 'https://www.shivansh-studio.store/social-media',
   },
 };
 

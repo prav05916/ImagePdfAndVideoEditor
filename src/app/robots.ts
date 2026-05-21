@@ -8,6 +8,6 @@ export default function robots(): MetadataRoute.Robots {
         allow: '/',
       },
     ],
-    sitemap: 'https://shivanshstudio.com/sitemap.xml',
+    sitemap: 'https://www.shivansh-studio.store/sitemap.xml',
   };
 }

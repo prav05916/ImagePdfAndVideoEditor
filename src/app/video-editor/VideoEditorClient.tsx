@@ -151,7 +151,7 @@ export default function VideoEditorPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   
   // Left Panel tabs
-  const [activeLeftTab, setActiveLeftTab] = useState<'media' | 'audio' | 'text' | 'effects'>('media');
+  const [activeLeftTab, setActiveLeftTab] = useState<'media' | 'audio' | 'text' | 'effects' | 'merger'>('media');
 
   // Voiceover state
   const [isRecording, setIsRecording] = useState(false);
@@ -169,10 +169,123 @@ export default function VideoEditorPage() {
   const [currentTime, setCurrentTime] = useState(0);
   const [zoom, setZoom] = useState(1);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [mediaLibrary, setMediaLibrary] = useState<{id: string, file?: File, url: string, type: 'video'|'audio'|'image', name: string}[]>([]);
+  const [mediaLibrary, setMediaLibrary] = useState<{id: string, file?: File, url: string, type: 'video'|'audio'|'image', name: string, duration?: number}[]>([]);
 
   const rulerRef = useRef<HTMLDivElement>(null);
   const [isScrubbing, setIsScrubbing] = useState(false);
+
+  // Merger states
+  const [mergeVideo1Id, setMergeVideo1Id] = useState<string>('');
+  const [mergeVideo2Id, setMergeVideo2Id] = useState<string>('');
+  const [mergeStart1, setMergeStart1] = useState<number>(0);
+  const [mergeEnd1, setMergeEnd1] = useState<number>(5);
+  const [mergeStart2, setMergeStart2] = useState<number>(0);
+  const [mergeEnd2, setMergeEnd2] = useState<number>(5);
+  const [mergeProgress, setMergeProgress] = useState<string>('');
+
+  // Merger logic based on selected ranges using FFmpeg
+  const mergeVideosByRange = async (
+    file1: File, start1: number, end1: number,
+    file2: File, start2: number, end2: number
+  ) => {
+    if (!ffmpeg || !ready) return;
+    setIsProcessing(true);
+    setMergeProgress("Initializing merger...");
+    
+    const inp1 = "merge_input1.mp4";
+    const inp2 = "merge_input2.mp4";
+    const out1 = "merge_out1.mp4";
+    const out2 = "merge_out2.mp4";
+    const listFile = "merge_list.txt";
+    const finalOut = "merged_video.mp4";
+    
+    try {
+      // 1. Write file 1
+      setMergeProgress("Reading Video 1...");
+      const data1 = await new Promise<Uint8Array>((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = () => resolve(new Uint8Array(r.result as ArrayBuffer));
+        r.onerror = reject;
+        r.readAsArrayBuffer(file1);
+      });
+      await ffmpeg.writeFile(inp1, data1);
+      
+      // 2. Write file 2
+      setMergeProgress("Reading Video 2...");
+      const data2 = await new Promise<Uint8Array>((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = () => resolve(new Uint8Array(r.result as ArrayBuffer));
+        r.onerror = reject;
+        r.readAsArrayBuffer(file2);
+      });
+      await ffmpeg.writeFile(inp2, data2);
+      
+      // 3. Trim Video 1
+      setMergeProgress("Trimming Video 1 segment...");
+      const dur1 = end1 - start1;
+      await ffmpeg.exec([
+        '-ss', start1.toString(),
+        '-t', dur1.toString(),
+        '-i', inp1,
+        '-c:v', 'libx264',
+        '-preset', 'ultrafast',
+        '-c:a', 'aac',
+        '-vf', 'scale=1280:720,pad=1280:720:(ow-iw)/2:(oh-ih)/2',
+        out1
+      ]);
+      
+      // 4. Trim Video 2
+      setMergeProgress("Trimming Video 2 segment...");
+      const dur2 = end2 - start2;
+      await ffmpeg.exec([
+        '-ss', start2.toString(),
+        '-t', dur2.toString(),
+        '-i', inp2,
+        '-c:v', 'libx264',
+        '-preset', 'ultrafast',
+        '-c:a', 'aac',
+        '-vf', 'scale=1280:720,pad=1280:720:(ow-iw)/2:(oh-ih)/2',
+        out2
+      ]);
+      
+      // 5. Concat Both
+      setMergeProgress("Stitching segments together...");
+      const listContent = `file '${out1}'\nfile '${out2}'\n`;
+      await ffmpeg.writeFile(listFile, listContent);
+      
+      await ffmpeg.exec([
+        '-f', 'concat',
+        '-safe', '0',
+        '-i', listFile,
+        '-c', 'copy',
+        finalOut
+      ]);
+      
+      setMergeProgress("Generating output file...");
+      const finalData = await ffmpeg.readFile(finalOut);
+      const url = URL.createObjectURL(new Blob([finalData as any], { type: 'video/mp4' }));
+      
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `merged_video_${Date.now()}.mp4`;
+      a.click();
+      
+      alert("Videos successfully merged and downloaded!");
+    } catch (err) {
+      console.error(err);
+      alert("Merge failed. Please ensure both selected videos are standard compatible MP4 files.");
+    } finally {
+      // Cleanup
+      try { await ffmpeg.deleteFile(inp1); } catch(e){}
+      try { await ffmpeg.deleteFile(inp2); } catch(e){}
+      try { await ffmpeg.deleteFile(out1); } catch(e){}
+      try { await ffmpeg.deleteFile(out2); } catch(e){}
+      try { await ffmpeg.deleteFile(listFile); } catch(e){}
+      try { await ffmpeg.deleteFile(finalOut); } catch(e){}
+      setIsProcessing(false);
+      setMergeProgress("");
+    }
+  };
 
   // Load FFmpeg Core
   useEffect(() => {
@@ -340,7 +453,7 @@ export default function VideoEditorPage() {
     setActiveClipId(null);
   };
 
-  // Uploaded media files
+  // Uploaded media files with dynamic duration detection
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return;
     const files = Array.from(e.target.files);
@@ -351,17 +464,44 @@ export default function VideoEditorPage() {
       } else if (file.type.startsWith('image')) {
         type = 'image';
       }
+      
       const url = URL.createObjectURL(file);
-      setMediaLibrary(p => [...p, { id: Date.now().toString() + Math.random().toString(), file, url, type, name: file.name }]);
+      
+      if (type === 'video' || type === 'audio') {
+        const tempElement = document.createElement(type);
+        tempElement.src = url;
+        tempElement.onloadedmetadata = () => {
+          const duration = tempElement.duration || 10;
+          setMediaLibrary(p => [...p, { 
+            id: Date.now().toString() + Math.random().toString(), 
+            file, 
+            url, 
+            type, 
+            name: file.name,
+            duration 
+          }]);
+        };
+      } else {
+        setMediaLibrary(p => [...p, { 
+          id: Date.now().toString() + Math.random().toString(), 
+          file, 
+          url, 
+          type, 
+          name: file.name,
+          duration: 5 
+        }]);
+      }
     });
   };
 
-  // Add clip to timeline
+  // Add clip to timeline with exact asset duration
   const addClipToTimeline = (media: any) => {
     const isVisual = media.type === 'video' || media.type === 'image';
     const targetTrackType = isVisual ? 'video' : 'audio';
     const trackIdx = tracks.findIndex(t => t.type === targetTrackType);
     if (trackIdx === -1) return;
+    
+    const clipDuration = media.duration || 10;
     
     const newClip: MediaClip = {
       id: Date.now().toString(),
@@ -369,10 +509,10 @@ export default function VideoEditorPage() {
       file: media.file,
       fileUrl: media.url,
       name: media.name,
-      duration: media.type === 'image' ? 5 : 10, // images default to 5s, others 10s
+      duration: clipDuration,
       startAt: currentTime,
       trimStart: 0,
-      trimEnd: media.type === 'image' ? 5 : 10,
+      trimEnd: clipDuration,
       scale: 1, rotation: 0, posX: 0, posY: 0, opacity: 1, volume: media.type === 'image' ? 0 : 1, speed: 1,
       isImage: media.type === 'image',
       filter: 'none'
@@ -643,6 +783,7 @@ export default function VideoEditorPage() {
             <button onClick={() => setActiveLeftTab('audio')} className={`flex-1 py-3 transition-colors ${activeLeftTab === 'audio' ? 'text-blue-500 border-b-2 border-blue-500 bg-white/5' : 'text-white/50 hover:text-white'}`}>Audio</button>
             <button onClick={() => setActiveLeftTab('text')} className={`flex-1 py-3 transition-colors ${activeLeftTab === 'text' ? 'text-blue-500 border-b-2 border-blue-500 bg-white/5' : 'text-white/50 hover:text-white'}`}>Text</button>
             <button onClick={() => setActiveLeftTab('effects')} className={`flex-1 py-3 transition-colors ${activeLeftTab === 'effects' ? 'text-blue-500 border-b-2 border-blue-500 bg-white/5' : 'text-white/50 hover:text-white'}`}>Effects</button>
+            <button onClick={() => setActiveLeftTab('merger')} className={`flex-1 py-3 transition-colors ${activeLeftTab === 'merger' ? 'text-blue-500 border-b-2 border-blue-500 bg-white/5' : 'text-white/50 hover:text-white'}`}>🔗 Merger</button>
           </div>
           
           <div className="p-4 flex-1 overflow-y-auto">
@@ -750,7 +891,124 @@ export default function VideoEditorPage() {
                 </div>
               </div>
             )}
-          </div>
+
+            {activeLeftTab === 'merger' && (
+              <div className="space-y-4 text-left">
+                <h4 className="text-xs font-bold text-white/40 uppercase tracking-wider mb-2">🔗 Quick Video Merger</h4>
+                <p className="text-[11px] text-white/50 leading-relaxed">
+                  Select any two uploaded videos from your assets, choose their specific time ranges, and stitch them together instantly!
+                </p>
+
+                {mediaLibrary.filter(m => m.type === 'video').length < 2 ? (
+                  <div className="p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/30 text-center space-y-2">
+                    <p className="text-xs text-yellow-500 font-medium">⚠️ Import at least 2 videos first</p>
+                    <p className="text-[10px] text-white/40">Go to the 'Media' tab to upload your MP4 videos from your local computer.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {/* Video 1 Selection */}
+                    <div className="space-y-2 p-3 bg-white/5 border border-white/10 rounded-lg">
+                      <label className="text-[10px] font-bold text-blue-400 uppercase">Video A (First Clip)</label>
+                      <select value={mergeVideo1Id} onChange={e => {
+                        const id = e.target.value;
+                        setMergeVideo1Id(id);
+                        const asset = mediaLibrary.find(v => v.id === id);
+                        if (asset) {
+                          setMergeStart1(0);
+                          setMergeEnd1(asset.duration || 5);
+                        }
+                      }} className="w-full bg-black border border-white/10 rounded px-2 py-1.5 text-xs text-white">
+                        <option value="">Select first video...</option>
+                        {mediaLibrary.filter(m => m.type === 'video').map(v => (
+                          <option key={v.id} value={v.id}>{v.name} ({(v.duration || 0).toFixed(1)}s)</option>
+                        ))}
+                      </select>
+                      
+                      {mergeVideo1Id && (
+                        <div className="space-y-2 pt-2 border-t border-white/5">
+                          <div className="flex justify-between text-[10px] text-white/60">
+                            <span>Range A: {mergeStart1.toFixed(1)}s - {mergeEnd1.toFixed(1)}s</span>
+                            <span className="text-blue-400 font-bold">Dur: {(mergeEnd1 - mergeStart1).toFixed(1)}s</span>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="text-[9px] text-white/40 block">Start (s)</label>
+                              <input type="number" step="0.1" min="0" max={mergeEnd1 - 0.1} value={mergeStart1} onChange={e => setMergeStart1(Math.max(0, +e.target.value))} className="w-full bg-black border border-white/10 rounded px-2 py-1 text-xs text-white font-mono" />
+                            </div>
+                            <div>
+                              <label className="text-[9px] text-white/40 block">End (s)</label>
+                              <input type="number" step="0.1" min={mergeStart1 + 0.1} max={mediaLibrary.find(v => v.id === mergeVideo1Id)?.duration || 10} value={mergeEnd1} onChange={e => setMergeEnd1(+e.target.value)} className="w-full bg-black border border-white/10 rounded px-2 py-1 text-xs text-white font-mono" />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Video 2 Selection */}
+                    <div className="space-y-2 p-3 bg-white/5 border border-white/10 rounded-lg">
+                      <label className="text-[10px] font-bold text-purple-400 uppercase">Video B (Second Clip)</label>
+                      <select value={mergeVideo2Id} onChange={e => {
+                        const id = e.target.value;
+                        setMergeVideo2Id(id);
+                        const asset = mediaLibrary.find(v => v.id === id);
+                        if (asset) {
+                          setMergeStart2(0);
+                          setMergeEnd2(asset.duration || 5);
+                        }
+                      }} className="w-full bg-black border border-white/10 rounded px-2 py-1.5 text-xs text-white">
+                        <option value="">Select second video...</option>
+                        {mediaLibrary.filter(m => m.type === 'video').map(v => (
+                          <option key={v.id} value={v.id}>{v.name} ({(v.duration || 0).toFixed(1)}s)</option>
+                        ))}
+                      </select>
+                      
+                      {mergeVideo2Id && (
+                        <div className="space-y-2 pt-2 border-t border-white/5">
+                          <div className="flex justify-between text-[10px] text-white/60">
+                            <span>Range B: {mergeStart2.toFixed(1)}s - {mergeEnd2.toFixed(1)}s</span>
+                            <span className="text-purple-400 font-bold">Dur: {(mergeEnd2 - mergeStart2).toFixed(1)}s</span>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="text-[9px] text-white/40 block">Start (s)</label>
+                              <input type="number" step="0.1" min="0" max={mergeEnd2 - 0.1} value={mergeStart2} onChange={e => setMergeStart2(Math.max(0, +e.target.value))} className="w-full bg-black border border-white/10 rounded px-2 py-1 text-xs text-white font-mono" />
+                            </div>
+                            <div>
+                              <label className="text-[9px] text-white/40 block">End (s)</label>
+                              <input type="number" step="0.1" min={mergeStart2 + 0.1} max={mediaLibrary.find(v => v.id === mergeVideo2Id)?.duration || 10} value={mergeEnd2} onChange={e => setMergeEnd2(+e.target.value)} className="w-full bg-black border border-white/10 rounded px-2 py-1 text-xs text-white font-mono" />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Merge Trigger Button */}
+                    <button 
+                      disabled={isProcessing || !ready || !mergeVideo1Id || !mergeVideo2Id}
+                      onClick={() => {
+                        const file1 = mediaLibrary.find(v => v.id === mergeVideo1Id);
+                        const file2 = mediaLibrary.find(v => v.id === mergeVideo2Id);
+                        if (file1?.file && file2?.file) {
+                          mergeVideosByRange(file1.file, mergeStart1, mergeEnd1, file2.file, mergeStart2, mergeEnd2);
+                        }
+                      }}
+                      className="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-lg text-xs font-bold text-white transition-all shadow-lg active:scale-95 disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-1.5"
+                    >
+                      <span>🔗</span>
+                      {isProcessing ? 'Merging Videos...' : 'Stitch & Merge Videos'}
+                    </button>
+
+                    {/* Progress loader */}
+                    {mergeProgress && (
+                      <div className="p-3 bg-white/5 border border-white/10 rounded-lg text-center space-y-2 animate-pulse">
+                        <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                        <p className="text-[10px] text-blue-400 font-bold tracking-wide uppercase">{mergeProgress}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
         </div>
 
         {/* CENTER PANEL: CANVAS PREVIEW */}
