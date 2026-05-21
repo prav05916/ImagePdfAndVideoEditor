@@ -144,13 +144,8 @@ function PreviewAudio({ src, isPlaying, timelineTime, startAt, trimStart, trimEn
   );
 }
 
-export default function VideoEditorClient() {
 
-import { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useAppStore } from '@/lib/store';
-import { FFmpeg } from '@ffmpeg/ffmpeg';
-import { fetchFile, toBlobURL } from '@ffmpeg/util';
+
 
 // Advanced Types for CapCut clone
 type TrackType = 'video' | 'audio' | 'text' | 'effect';
@@ -1478,7 +1473,7 @@ export default function VideoEditorPage() {
           </div>
 
         </div>
-      </div>
+      
     </div>
   );
 }
