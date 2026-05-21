@@ -32,6 +32,7 @@ interface MediaClip {
   opacity: number;
   // Audio
   volume: number;
+  speed?: number;
   // Text specific
   text?: string;
   color?: string;
@@ -99,7 +100,7 @@ export default function VideoEditorPage() {
       startAt: 0,
       trimStart: 0,
       trimEnd: 10,
-      scale: 1, rotation: 0, posX: 0, posY: 0, opacity: 1, volume: 1
+      scale: 1, rotation: 0, posX: 0, posY: 0, opacity: 1, volume: 1, speed: 1
     };
 
     setTracks(p => p.map((t, i) => i === trackIdx ? { ...t, clips: [...t.clips, newClip] } : t));
@@ -159,7 +160,13 @@ export default function VideoEditorPage() {
         const inp = `input_${sessionId}_${i}.mp4`;
         const out = `clip_${sessionId}_${i}.mp4`;
         
-        await ffmpeg.writeFile(inp, await fetchFile(clip.file));
+        const fileData = await new Promise<Uint8Array>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(new Uint8Array(reader.result as ArrayBuffer));
+          reader.onerror = reject;
+          reader.readAsArrayBuffer(clip.file!);
+        });
+        await ffmpeg.writeFile(inp, fileData);
         createdFiles.push(inp);
         
         const dur = clip.trimEnd - clip.trimStart;
@@ -173,9 +180,20 @@ export default function VideoEditorPage() {
         vFilters.push(`scale=1280*${clip.scale}:720*${clip.scale}:force_original_aspect_ratio=decrease`);
         vFilters.push('pad=1280:720:(ow-iw)/2:(oh-ih)/2');
         
+        const speed = clip.speed || 1;
+        if (speed !== 1) {
+          vFilters.push(`setpts=${1/speed}*PTS`);
+        }
+        
         const args = ['-ss', clip.trimStart.toString(), '-t', dur.toString(), '-i', inp];
         const vf = `[0:v]${vFilters.join(',')}[v]`;
-        const af = `[0:a]volume=${clip.volume}[a]`;
+        
+        const aFilters = [`volume=${clip.volume}`];
+        if (speed !== 1) {
+           aFilters.push(`atempo=${speed}`);
+        }
+        const af = `[0:a]${aFilters.join(',')}[a]`;
+        
         args.push('-filter_complex', `${vf};${af}`, '-map', '[v]', '-map', '[a]');
         args.push('-c:v', 'libx264', '-preset', 'ultrafast', '-c:a', 'aac', out);
         
@@ -390,12 +408,23 @@ export default function VideoEditorPage() {
               {/* Audio specific */}
               {(activeClip.type === 'audio' || activeClip.type === 'video') && (
                 <div className="space-y-4 pt-4 border-t border-white/10">
-                  <h4 className="text-xs font-bold text-white/50 uppercase tracking-widest">Audio</h4>
+                  <h4 className="text-xs font-bold text-white/50 uppercase tracking-widest">Audio & Playback</h4>
                   <div className="grid grid-cols-[1fr_2fr] gap-2 items-center">
                     <label className="text-xs text-white/70">Volume</label>
                     <div className="flex items-center gap-2">
                       <input type="range" min="0" max="2" step="0.1" value={activeClip.volume} onChange={e => updateActiveClip({ volume: +e.target.value })} className="w-full accent-blue-500" />
                       <span className="text-[10px] w-8 font-mono">{(activeClip.volume * 100).toFixed(0)}%</span>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-[1fr_2fr] gap-2 items-center">
+                    <label className="text-xs text-white/70">Speed</label>
+                    <div className="flex items-center gap-2">
+                      <select value={activeClip.speed || 1} onChange={e => updateActiveClip({ speed: +e.target.value })} className="w-full bg-black border border-white/10 rounded px-2 py-1.5 text-xs text-white">
+                        <option value={0.5}>0.5x (Slow)</option>
+                        <option value={1}>1.0x (Normal)</option>
+                        <option value={1.5}>1.5x (Fast)</option>
+                        <option value={2}>2.0x (Very Fast)</option>
+                      </select>
                     </div>
                   </div>
                 </div>

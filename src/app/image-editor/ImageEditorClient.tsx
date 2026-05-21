@@ -28,6 +28,7 @@ export default function ImageEditorPage() {
   const [brightness, setBrightness] = useState(0);
   const [contrast, setContrast] = useState(0);
   const [saturation, setSaturation] = useState(0);
+  const [blur, setBlur] = useState(0);
 
   // Transform config
   const [rotation, setRotation] = useState(0);
@@ -66,6 +67,7 @@ export default function ImageEditorPage() {
         setBrightness(0);
         setContrast(0);
         setSaturation(0);
+        setBlur(0);
         setRotation(0);
         setFlipH(false);
         setFlipV(false);
@@ -78,7 +80,7 @@ export default function ImageEditorPage() {
     reader.readAsDataURL(file);
   };
 
-  const drawImage = useCallback((img: HTMLImageElement | null, b: number, c: number, s: number, rot: number, fh: boolean, fv: boolean, prst: string, enh: boolean) => {
+  const drawImage = useCallback((img: HTMLImageElement | null, b: number, c: number, s: number, bl: number, rot: number, fh: boolean, fv: boolean, prst: string, enh: boolean) => {
     const canvas = canvasRef.current;
     if (!canvas || !img) return;
 
@@ -95,7 +97,7 @@ export default function ImageEditorPage() {
     ctx.rotate((rot * Math.PI) / 180);
     ctx.scale(fh ? -1 : 1, fv ? -1 : 1);
 
-    let filterStr = `brightness(${100 + b}%) contrast(${100 + c}%) saturate(${100 + s}%)`;
+    let filterStr = `brightness(${100 + b}%) contrast(${100 + c}%) saturate(${100 + s}%) blur(${bl}px)`;
     if (prst === 'grayscale') filterStr += ' grayscale(100%)';
     if (prst === 'sepia') filterStr += ' sepia(100%)';
     if (prst === 'invert') filterStr += ' invert(100%)';
@@ -126,7 +128,7 @@ export default function ImageEditorPage() {
   }, []);
 
   // Dummy drawImage ref holder to avoid lint error
-  const _drawImage = useCallback((img: HTMLImageElement | null, b: number, c: number, s: number, rot: number, fh: boolean, fv: boolean, prst: string, enh: boolean) => {
+  const _drawImage = useCallback((img: HTMLImageElement | null, b: number, c: number, s: number, bl: number, rot: number, fh: boolean, fv: boolean, prst: string, enh: boolean) => {
     const canvas = canvasRef.current;
     if (!canvas || !img) return;
     const isRotated = rot === 90 || rot === 270;
@@ -139,7 +141,7 @@ export default function ImageEditorPage() {
     ctx.translate(canvas.width / 2, canvas.height / 2);
     ctx.rotate((rot * Math.PI) / 180);
     ctx.scale(fh ? -1 : 1, fv ? -1 : 1);
-    let filterStr = `brightness(${100 + b}%) contrast(${100 + c}%) saturate(${100 + s}%)`;
+    let filterStr = `brightness(${100 + b}%) contrast(${100 + c}%) saturate(${100 + s}%) blur(${bl}px)`;
     if (prst === 'grayscale') filterStr += ' grayscale(100%)';
     if (prst === 'sepia') filterStr += ' sepia(100%)';
     if (prst === 'invert') filterStr += ' invert(100%)';
@@ -174,9 +176,9 @@ export default function ImageEditorPage() {
 
   useEffect(() => {
     if (originalImageRef.current && canvasRef.current && !showCropper) {
-      drawImage(originalImageRef.current, brightness, contrast, saturation, rotation, flipH, flipV, preset, enhanced);
+      drawImage(originalImageRef.current, brightness, contrast, saturation, blur, rotation, flipH, flipV, preset, enhanced);
     }
-  }, [brightness, contrast, saturation, rotation, flipH, flipV, preset, enhanced, drawImage, image, showCropper]);
+  }, [brightness, contrast, saturation, blur, rotation, flipH, flipV, preset, enhanced, drawImage, image, showCropper]);
 
   const handleCropComplete = useCallback((_: Area, croppedAreaPixels: Area) => {
     setCroppedArea(croppedAreaPixels);
@@ -202,7 +204,7 @@ export default function ImageEditorPage() {
       setResizeH(newImg.height);
       setOrigAspect(newImg.width / newImg.height);
       setShowCropper(false);
-      drawImage(newImg, brightness, contrast, saturation, rotation, flipH, flipV, preset, enhanced);
+      drawImage(newImg, brightness, contrast, saturation, blur, rotation, flipH, flipV, preset, enhanced);
     };
     newImg.src = canvas.toDataURL();
   };
@@ -219,7 +221,7 @@ export default function ImageEditorPage() {
     newImg.onload = () => {
       originalImageRef.current = newImg;
       setImage(canvas.toDataURL());
-      drawImage(newImg, brightness, contrast, saturation, rotation, flipH, flipV, preset, enhanced);
+      drawImage(newImg, brightness, contrast, saturation, blur, rotation, flipH, flipV, preset, enhanced);
     };
     newImg.src = canvas.toDataURL();
   };
@@ -300,7 +302,7 @@ export default function ImageEditorPage() {
                 {t(locale, 'common.downloadPNG')}
               </button>
               <button
-                onClick={() => { setImage(null); setEnhanced(false); setBrightness(0); setContrast(0); setSaturation(0); setRotation(0); setFlipH(false); setFlipV(false); setFilterPreset('none'); }}
+                onClick={() => { setImage(null); setEnhanced(false); setBrightness(0); setContrast(0); setSaturation(0); setBlur(0); setRotation(0); setFlipH(false); setFlipV(false); setFilterPreset('none'); }}
                 className="px-6 py-2.5 glass rounded-xl text-text-secondary text-sm font-semibold hover:text-text-primary transition-colors"
               >
                 {t(locale, 'common.upload')} ↺
@@ -340,8 +342,9 @@ export default function ImageEditorPage() {
                     <Slider label={t(locale, 'imageEditor.brightness')} value={brightness} onChange={setBrightness} />
                     <Slider label={t(locale, 'imageEditor.contrast')} value={contrast} onChange={setContrast} />
                     <Slider label={t(locale, 'imageEditor.saturation')} value={saturation} onChange={setSaturation} />
+                    <Slider label="Blur (px)" value={blur} onChange={setBlur} min={0} max={20} />
                     <button
-                      onClick={() => { setBrightness(0); setContrast(0); setSaturation(0); }}
+                      onClick={() => { setBrightness(0); setContrast(0); setSaturation(0); setBlur(0); }}
                       className="w-full py-2 rounded-xl border border-border text-text-muted text-sm hover:text-text-secondary hover:border-primary/30 transition-all"
                     >
                       {t(locale, 'common.reset')}

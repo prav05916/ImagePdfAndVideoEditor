@@ -4,7 +4,7 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        source: "/",
+        source: "/video-editor",
         headers: [
           {
             key: "Cross-Origin-Embedder-Policy",
@@ -17,7 +17,7 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        source: "/:path*",
+        source: "/video-editor/:path*",
         headers: [
           {
             key: "Cross-Origin-Embedder-Policy",

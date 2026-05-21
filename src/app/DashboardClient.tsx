@@ -8,17 +8,17 @@ import { t } from '@/lib/i18n';
 const tools = [
   { key: 'nav.videoEditor', href: '/video-editor', icon: '🎬', color: 'from-blue-500 to-indigo-600', desc: 'Timeline editing, merge clips, and apply 20+ pro filters.', tag: 'PRO' },
   { key: 'nav.resumeEnhancer', href: '/resume-enhancer', icon: '🧾', color: 'from-slate-500 to-gray-600', desc: 'ATS optimized resume builder and strict document checker.', tag: 'HOT' },
-  { key: 'nav.imageEditor', href: '/image-editor', icon: '🖼️', color: 'from-indigo-500 to-purple-600', desc: 'Add text, watermarks, and tune colors professionally.' },
-  { key: 'nav.bgRemover', href: '/background-remover', icon: '✂️', color: 'from-emerald-500 to-teal-600', desc: 'Instant AI-powered background removal.' },
-  { key: 'nav.weddingCards', href: '/wedding-cards', icon: '💍', color: 'from-amber-500 to-orange-600', desc: 'Beautifully crafted Indian wedding templates.' },
-  { key: 'nav.invitationMaker', href: '/invitation-maker', icon: '🎉', color: 'from-pink-500 to-rose-600', desc: 'Create stunning invitations for any event.' },
-  { key: 'nav.socialMedia', href: '/social-media', icon: '📸', color: 'from-cyan-500 to-blue-600', desc: 'Generate engaging social media posts easily.' },
-  { key: 'nav.quotePoster', href: '/quote-poster', icon: '✍️', color: 'from-violet-500 to-fuchsia-600', desc: 'Design inspiring and highly shareable quote posters.' },
+  { key: 'nav.imageEditor', href: '/image-editor', icon: '🖼️', color: 'from-indigo-500 to-purple-600', desc: 'Add text, watermarks, and tune colors professionally.', tag: 'HOT' },
+  { key: 'nav.bgRemover', href: '/background-remover', icon: '✂️', color: 'from-emerald-500 to-teal-600', desc: 'Instant AI-powered background removal.', tag: 'PRO' },
+  { key: 'nav.weddingCards', href: '/wedding-cards', icon: '💍', color: 'from-amber-500 to-orange-600', desc: 'Beautifully crafted Indian wedding templates.', tag: 'HOT' },
+  { key: 'nav.invitationMaker', href: '/invitation-maker', icon: '🎉', color: 'from-pink-500 to-rose-600', desc: 'Create stunning invitations for any event.', tag: 'HOT' },
+  { key: 'nav.socialMedia', href: '/social-media', icon: '📸', color: 'from-cyan-500 to-blue-600', desc: 'Generate engaging social media posts easily.', tag: 'PRO' },
+  { key: 'nav.quotePoster', href: '/quote-poster', icon: '✍️', color: 'from-violet-500 to-fuchsia-600', desc: 'Design inspiring and highly shareable quote posters.', tag: 'HOT' },
 ];
 
 const stats = [
-  { labelKey: 'dashboard.totalTools', value: '8', icon: '🛠️' },
-  { labelKey: 'dashboard.templates', value: '25+', icon: '📐' },
+  { labelKey: 'dashboard.totalTools', value: '25+', icon: '📐' },
+  { labelKey: 'dashboard.templates', value: '100+', icon: '🎨' },
   { labelKey: 'dashboard.languages', value: '2', icon: '🌍' },
   { labelKey: 'dashboard.freeToUse', value: '✓', icon: '💰' },
 ];
@@ -85,7 +85,7 @@ export default function Dashboard() {
       {/* Quick Actions */}
       <div className="mb-4">
         <h2 className="text-xl font-bold text-text-primary mb-1">{t(locale, 'dashboard.quickActions')}</h2>
-        <p className="text-text-muted text-sm">Select a tool to get started</p>
+        <p className="text-text-muted text-sm">Select a tool to get started hot or pro</p>
       </div>
 
       <motion.div
