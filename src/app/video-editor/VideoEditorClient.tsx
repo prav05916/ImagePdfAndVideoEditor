@@ -1,10 +1,10 @@
 'use client';
 
+import { fetchFile, toBlobURL } from '@ffmpeg/util';
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '@/lib/store';
 import { FFmpeg } from '@ffmpeg/ffmpeg';
-import { fetchFile, toBlobURL } from '@ffmpeg/util';
 
 // Advanced Types for CapCut clone
 type TrackType = 'video' | 'audio' | 'text' | 'effect';
@@ -20,27 +20,22 @@ interface MediaClip {
   fileUrl?: string;
   type: TrackType;
   name: string;
-  duration: number; // original duration
-  startAt: number; // position on timeline
-  trimStart: number; // cut start
-  trimEnd: number; // cut end
-  // Transform
+  duration: number;
+  startAt: number;
+  trimStart: number;
+  trimEnd: number;
   scale: number;
   rotation: number;
   posX: number;
   posY: number;
   opacity: number;
-  // Audio
   volume: number;
   speed?: number;
-  // Text specific
   text?: string;
   color?: string;
   fontFamily?: string;
   textShadow?: string;
-  // Image specific
   isImage?: boolean;
-  // Effect filter
   filter?: string;
 }
 
@@ -63,10 +58,8 @@ function PreviewVideo({ src, isPlaying, timelineTime, startAt, trimStart, trimEn
     const video = ref.current;
     if (!video) return;
 
-    // Calculate local playhead time
     const clipTime = (timelineTime - startAt) * speed + trimStart;
 
-    // Sync current time if it drifts too much
     if (Math.abs(video.currentTime - clipTime) > 0.25) {
       video.currentTime = Math.max(trimStart, Math.min(trimEnd, clipTime));
     }
@@ -76,7 +69,7 @@ function PreviewVideo({ src, isPlaying, timelineTime, startAt, trimStart, trimEn
 
     if (isPlaying) {
       if (video.paused) {
-        video.play().catch(() => {});
+        video.play().catch(() => { });
       }
     } else {
       if (!video.paused) {
@@ -126,148 +119,7 @@ function PreviewAudio({ src, isPlaying, timelineTime, startAt, trimStart, trimEn
 
     if (isPlaying) {
       if (audio.paused) {
-        audio.play().catch(() => {});
-      }
-    } else {
-      if (!audio.paused) {
-        audio.pause();
-      }
-    }
-  }, [isPlaying, timelineTime, startAt, trimStart, trimEnd, volume, speed]);
-
-  return (
-    <audio
-      ref={ref}
-      src={src}
-      muted={volume === 0}
-    />
-  );
-}
-
-
-
-
-// Advanced Types for CapCut clone
-type TrackType = 'video' | 'audio' | 'text' | 'effect';
-interface TimelineTrack {
-  id: string;
-  type: TrackType;
-  clips: MediaClip[];
-}
-
-interface MediaClip {
-  id: string;
-  file?: File;
-  fileUrl?: string;
-  type: TrackType;
-  name: string;
-  duration: number; // original duration
-  startAt: number; // position on timeline
-  trimStart: number; // cut start
-  trimEnd: number; // cut end
-  // Transform
-  scale: number;
-  rotation: number;
-  posX: number;
-  posY: number;
-  opacity: number;
-  // Audio
-  volume: number;
-  speed?: number;
-  // Text specific
-  text?: string;
-  color?: string;
-  fontFamily?: string;
-  textShadow?: string;
-  // Image specific
-  isImage?: boolean;
-  // Effect filter
-  filter?: string;
-}
-
-// Child component for frame-accurate HTML5 Video playback sync
-interface PreviewVideoProps {
-  src: string;
-  isPlaying: boolean;
-  timelineTime: number;
-  startAt: number;
-  trimStart: number;
-  trimEnd: number;
-  volume: number;
-  speed: number;
-}
-
-function PreviewVideo({ src, isPlaying, timelineTime, startAt, trimStart, trimEnd, volume, speed }: PreviewVideoProps) {
-  const ref = useRef<HTMLVideoElement>(null);
-
-  useEffect(() => {
-    const video = ref.current;
-    if (!video) return;
-
-    // Calculate local playhead time
-    const clipTime = (timelineTime - startAt) * speed + trimStart;
-    
-    // Sync current time if it drifts too much
-    if (Math.abs(video.currentTime - clipTime) > 0.25) {
-      video.currentTime = Math.max(trimStart, Math.min(trimEnd, clipTime));
-    }
-    
-    video.volume = volume;
-    video.playbackRate = speed;
-
-    if (isPlaying) {
-      if (video.paused) {
-        video.play().catch(() => {});
-      }
-    } else {
-      if (!video.paused) {
-        video.pause();
-      }
-    }
-  }, [isPlaying, timelineTime, startAt, trimStart, trimEnd, volume, speed]);
-
-  return (
-    <video
-      ref={ref}
-      src={src}
-      className="w-full h-full object-cover"
-      muted={volume === 0}
-      playsInline
-    />
-  );
-}
-
-// Child component for frame-accurate background audio playback sync
-interface PreviewAudioProps {
-  src: string;
-  isPlaying: boolean;
-  timelineTime: number;
-  startAt: number;
-  trimStart: number;
-  trimEnd: number;
-  volume: number;
-  speed: number;
-}
-
-function PreviewAudio({ src, isPlaying, timelineTime, startAt, trimStart, trimEnd, volume, speed }: PreviewAudioProps) {
-  const ref = useRef<HTMLAudioElement>(null);
-
-  useEffect(() => {
-    const audio = ref.current;
-    if (!audio) return;
-
-    const clipTime = (timelineTime - startAt) * speed + trimStart;
-    
-    if (Math.abs(audio.currentTime - clipTime) > 0.25) {
-      audio.currentTime = Math.max(trimStart, Math.min(trimEnd, clipTime));
-    }
-
-    audio.volume = volume;
-    audio.playbackRate = speed;
-
-    if (isPlaying) {
-      if (audio.paused) {
-        audio.play().catch(() => {});
+        audio.play().catch(() => { });
       }
     } else {
       if (!audio.paused) {
@@ -290,32 +142,28 @@ export default function VideoEditorPage() {
   const [ffmpeg, setFFmpeg] = useState<FFmpeg | null>(null);
   const [ready, setReady] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  
-  // Left Panel tabs
+
   const [activeLeftTab, setActiveLeftTab] = useState<'media' | 'audio' | 'text' | 'effects' | 'merger'>('media');
 
-  // Voiceover state
   const [isRecording, setIsRecording] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordedChunks = useRef<Blob[]>([]);
 
-  // Advanced State
   const [tracks, setTracks] = useState<TimelineTrack[]>([
     { id: 'v1', type: 'video', clips: [] },
     { id: 'a1', type: 'audio', clips: [] },
     { id: 't1', type: 'text', clips: [] }
   ]);
-  
+
   const [activeClipId, setActiveClipId] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [zoom, setZoom] = useState(1);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [mediaLibrary, setMediaLibrary] = useState<{id: string, file?: File, url: string, type: 'video'|'audio'|'image', name: string, duration?: number}[]>([]);
+  const [mediaLibrary, setMediaLibrary] = useState<{ id: string, file?: File, url: string, type: 'video' | 'audio' | 'image', name: string, duration?: number }[]>([]);
 
   const rulerRef = useRef<HTMLDivElement>(null);
   const [isScrubbing, setIsScrubbing] = useState(false);
 
-  // Merger states
   const [mergeVideo1Id, setMergeVideo1Id] = useState<string>('');
   const [mergeVideo2Id, setMergeVideo2Id] = useState<string>('');
   const [mergeStart1, setMergeStart1] = useState<number>(0);
@@ -324,7 +172,6 @@ export default function VideoEditorPage() {
   const [mergeEnd2, setMergeEnd2] = useState<number>(5);
   const [mergeProgress, setMergeProgress] = useState<string>('');
 
-  // Merger logic based on selected ranges using FFmpeg
   const mergeVideosByRange = async (
     file1: File, start1: number, end1: number,
     file2: File, start2: number, end2: number
@@ -332,16 +179,15 @@ export default function VideoEditorPage() {
     if (!ffmpeg || !ready) return;
     setIsProcessing(true);
     setMergeProgress("Initializing merger...");
-    
+
     const inp1 = "merge_input1.mp4";
     const inp2 = "merge_input2.mp4";
     const out1 = "merge_out1.mp4";
     const out2 = "merge_out2.mp4";
     const listFile = "merge_list.txt";
     const finalOut = "merged_video.mp4";
-    
+
     try {
-      // 1. Write file 1
       setMergeProgress("Reading Video 1...");
       const data1 = await new Promise<Uint8Array>((resolve, reject) => {
         const r = new FileReader();
@@ -350,8 +196,7 @@ export default function VideoEditorPage() {
         r.readAsArrayBuffer(file1);
       });
       await ffmpeg.writeFile(inp1, data1);
-      
-      // 2. Write file 2
+
       setMergeProgress("Reading Video 2...");
       const data2 = await new Promise<Uint8Array>((resolve, reject) => {
         const r = new FileReader();
@@ -360,8 +205,7 @@ export default function VideoEditorPage() {
         r.readAsArrayBuffer(file2);
       });
       await ffmpeg.writeFile(inp2, data2);
-      
-      // 3. Trim Video 1
+
       setMergeProgress("Trimming Video 1 segment...");
       const dur1 = end1 - start1;
       await ffmpeg.exec([
@@ -374,8 +218,7 @@ export default function VideoEditorPage() {
         '-vf', 'scale=1280:720,pad=1280:720:(ow-iw)/2:(oh-ih)/2',
         out1
       ]);
-      
-      // 4. Trim Video 2
+
       setMergeProgress("Trimming Video 2 segment...");
       const dur2 = end2 - start2;
       await ffmpeg.exec([
@@ -388,12 +231,11 @@ export default function VideoEditorPage() {
         '-vf', 'scale=1280:720,pad=1280:720:(ow-iw)/2:(oh-ih)/2',
         out2
       ]);
-      
-      // 5. Concat Both
+
       setMergeProgress("Stitching segments together...");
       const listContent = `file '${out1}'\nfile '${out2}'\n`;
       await ffmpeg.writeFile(listFile, listContent);
-      
+
       await ffmpeg.exec([
         '-f', 'concat',
         '-safe', '0',
@@ -401,34 +243,32 @@ export default function VideoEditorPage() {
         '-c', 'copy',
         finalOut
       ]);
-      
+
       setMergeProgress("Generating output file...");
       const finalData = await ffmpeg.readFile(finalOut);
       const url = URL.createObjectURL(new Blob([finalData as any], { type: 'video/mp4' }));
-      
+
       const a = document.createElement('a');
       a.href = url;
       a.download = `merged_video_${Date.now()}.mp4`;
       a.click();
-      
+
       alert("Videos successfully merged and downloaded!");
     } catch (err) {
       console.error(err);
       alert("Merge failed. Please ensure both selected videos are standard compatible MP4 files.");
     } finally {
-      // Cleanup
-      try { await ffmpeg.deleteFile(inp1); } catch(e){}
-      try { await ffmpeg.deleteFile(inp2); } catch(e){}
-      try { await ffmpeg.deleteFile(out1); } catch(e){}
-      try { await ffmpeg.deleteFile(out2); } catch(e){}
-      try { await ffmpeg.deleteFile(listFile); } catch(e){}
-      try { await ffmpeg.deleteFile(finalOut); } catch(e){}
+      try { await ffmpeg.deleteFile(inp1); } catch (e) { }
+      try { await ffmpeg.deleteFile(inp2); } catch (e) { }
+      try { await ffmpeg.deleteFile(out1); } catch (e) { }
+      try { await ffmpeg.deleteFile(out2); } catch (e) { }
+      try { await ffmpeg.deleteFile(listFile); } catch (e) { }
+      try { await ffmpeg.deleteFile(finalOut); } catch (e) { }
       setIsProcessing(false);
       setMergeProgress("");
     }
   };
 
-  // Load FFmpeg Core
   useEffect(() => {
     (async () => {
       try {
@@ -446,7 +286,6 @@ export default function VideoEditorPage() {
     })();
   }, []);
 
-  // Playback engine loop
   useEffect(() => {
     let lastTime = performance.now();
     let frameId: number;
@@ -483,7 +322,6 @@ export default function VideoEditorPage() {
     };
   }, [isPlaying, tracks]);
 
-  // Scrubbing handlers
   const handleRulerTimeChange = (e: React.MouseEvent) => {
     if (!rulerRef.current) return;
     const rect = rulerRef.current.getBoundingClientRect();
@@ -521,7 +359,6 @@ export default function VideoEditorPage() {
     };
   }, [isScrubbing, zoom]);
 
-  // Split clip logic
   const splitActiveClip = () => {
     if (!activeClipId) {
       for (const track of tracks) {
@@ -581,7 +418,6 @@ export default function VideoEditorPage() {
     setActiveClipId(clip2.id);
   };
 
-  // Delete clip logic
   const deleteActiveClip = () => {
     if (!activeClipId) {
       alert("Please select a clip on the timeline first to delete it.");
@@ -594,7 +430,6 @@ export default function VideoEditorPage() {
     setActiveClipId(null);
   };
 
-  // Uploaded media files with dynamic duration detection
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return;
     const files = Array.from(e.target.files);
@@ -605,45 +440,44 @@ export default function VideoEditorPage() {
       } else if (file.type.startsWith('image')) {
         type = 'image';
       }
-      
+
       const url = URL.createObjectURL(file);
-      
+
       if (type === 'video' || type === 'audio') {
         const tempElement = document.createElement(type);
         tempElement.src = url;
         tempElement.onloadedmetadata = () => {
           const duration = tempElement.duration || 10;
-          setMediaLibrary(p => [...p, { 
-            id: Date.now().toString() + Math.random().toString(), 
-            file, 
-            url, 
-            type, 
+          setMediaLibrary(p => [...p, {
+            id: Date.now().toString() + Math.random().toString(),
+            file,
+            url,
+            type,
             name: file.name,
-            duration 
+            duration
           }]);
         };
       } else {
-        setMediaLibrary(p => [...p, { 
-          id: Date.now().toString() + Math.random().toString(), 
-          file, 
-          url, 
-          type, 
+        setMediaLibrary(p => [...p, {
+          id: Date.now().toString() + Math.random().toString(),
+          file,
+          url,
+          type,
           name: file.name,
-          duration: 5 
+          duration: 5
         }]);
       }
     });
   };
 
-  // Add clip to timeline with exact asset duration
   const addClipToTimeline = (media: any) => {
     const isVisual = media.type === 'video' || media.type === 'image';
     const targetTrackType = isVisual ? 'video' : 'audio';
     const trackIdx = tracks.findIndex(t => t.type === targetTrackType);
     if (trackIdx === -1) return;
-    
+
     const clipDuration = media.duration || 10;
-    
+
     const newClip: MediaClip = {
       id: Date.now().toString(),
       type: targetTrackType,
@@ -663,7 +497,6 @@ export default function VideoEditorPage() {
     setActiveClipId(newClip.id);
   };
 
-  // Voiceover recording
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -715,7 +548,6 @@ export default function VideoEditorPage() {
     }
   };
 
-  // Add preset background tracks
   const presetAudioTracks = [
     { name: "Lo-Fi Dream Chill", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" },
     { name: "Synthwave Sunset", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" },
@@ -731,7 +563,7 @@ export default function VideoEditorPage() {
       type: 'audio',
       fileUrl: url,
       name: name,
-      duration: 30, // standard trim duration
+      duration: 30,
       startAt: currentTime,
       trimStart: 0,
       trimEnd: 30,
@@ -741,7 +573,6 @@ export default function VideoEditorPage() {
     setActiveClipId(newClip.id);
   };
 
-  // Text presets
   const textPresets = [
     { name: "Bold Heading", text: "HEADING TEXT", color: "#ffffff", fontFamily: "Inter", textShadow: "2px 2px 8px rgba(0,0,0,0.8)" },
     { name: "Modern Caption", text: "Caption text here", color: "#6366f1", fontFamily: "Inter", textShadow: "none" },
@@ -770,7 +601,6 @@ export default function VideoEditorPage() {
     setActiveClipId(newClip.id);
   };
 
-  // Effects filters list
   const effectFilters = [
     { name: "Original / Normal", filter: "none" },
     { name: "Cinematic Grayscale", filter: "grayscale(1) contrast(1.15)" },
@@ -805,10 +635,9 @@ export default function VideoEditorPage() {
 
   const activeClip = getActiveClip();
 
-  // Export video using FFmpeg
   const exportVideo = async () => {
     if (!ffmpeg || !ready) return;
-    
+
     const videoTrack = tracks.find(t => t.type === 'video');
     if (!videoTrack || videoTrack.clips.length === 0) {
       alert("No video clips to export.");
@@ -818,17 +647,17 @@ export default function VideoEditorPage() {
     setIsProcessing(true);
     const sessionId = Date.now();
     const createdFiles: string[] = [];
-    
+
     try {
       let concatList = '';
-      
+
       for (let i = 0; i < videoTrack.clips.length; i++) {
         const clip = videoTrack.clips[i];
         if (!clip.file) continue;
-        
+
         const inp = `input_${sessionId}_${i}.mp4`;
         const out = `clip_${sessionId}_${i}.mp4`;
-        
+
         const fileData = await new Promise<Uint8Array>((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = () => resolve(new Uint8Array(reader.result as ArrayBuffer));
@@ -837,61 +666,61 @@ export default function VideoEditorPage() {
         });
         await ffmpeg.writeFile(inp, fileData);
         createdFiles.push(inp);
-        
+
         const dur = clip.trimEnd - clip.trimStart;
         const vFilters: string[] = [];
-        
+
         if (clip.rotation === 90) vFilters.push('transpose=1');
         else if (clip.rotation === 180) vFilters.push('transpose=2,transpose=2');
         else if (clip.rotation === -90 || clip.rotation === 270) vFilters.push('transpose=2');
-        
+
         vFilters.push(`scale=1280*${clip.scale}:720*${clip.scale}:force_original_aspect_ratio=decrease`);
         vFilters.push('pad=1280:720:(ow-iw)/2:(oh-ih)/2');
-        
+
         const speed = clip.speed || 1;
         if (speed !== 1) {
-          vFilters.push(`setpts=${1/speed}*PTS`);
+          vFilters.push(`setpts=${1 / speed}*PTS`);
         }
-        
+
         const args = ['-ss', clip.trimStart.toString(), '-t', dur.toString(), '-i', inp];
         const vf = `[0:v]${vFilters.join(',')}[v]`;
-        
+
         const aFilters = [`volume=${clip.volume}`];
         if (speed !== 1) {
-           aFilters.push(`atempo=${speed}`);
+          aFilters.push(`atempo=${speed}`);
         }
         const af = `[0:a]${aFilters.join(',')}[a]`;
-        
+
         args.push('-filter_complex', `${vf};${af}`, '-map', '[v]', '-map', '[a]');
         args.push('-c:v', 'libx264', '-preset', 'ultrafast', '-c:a', 'aac', out);
-        
+
         await ffmpeg.exec(args);
         createdFiles.push(out);
         concatList += `file '${out}'\n`;
       }
-      
+
       const listFile = `list_${sessionId}.txt`;
       await ffmpeg.writeFile(listFile, concatList);
       createdFiles.push(listFile);
-      
+
       const finalOut = `output_${sessionId}.mp4`;
       await ffmpeg.exec(['-f', 'concat', '-safe', '0', '-i', listFile, '-c', 'copy', finalOut]);
       createdFiles.push(finalOut);
-      
+
       const data = await ffmpeg.readFile(finalOut);
       const videoUrl = URL.createObjectURL(new Blob([data as any], { type: 'video/mp4' }));
-      
+
       const a = document.createElement('a');
       a.href = videoUrl;
       a.download = `exported_video_${sessionId}.mp4`;
       a.click();
-      
+
     } catch (e) {
       console.error(e);
       alert('Export failed.');
     } finally {
       for (const f of createdFiles) {
-        try { await ffmpeg.deleteFile(f); } catch (e) {}
+        try { await ffmpeg.deleteFile(f); } catch (e) { }
       }
       setIsProcessing(false);
     }
@@ -926,7 +755,7 @@ export default function VideoEditorPage() {
             <button onClick={() => setActiveLeftTab('effects')} className={`flex-1 py-3 transition-colors ${activeLeftTab === 'effects' ? 'text-blue-500 border-b-2 border-blue-500 bg-white/5' : 'text-white/50 hover:text-white'}`}>Effects</button>
             <button onClick={() => setActiveLeftTab('merger')} className={`flex-1 py-3 transition-colors ${activeLeftTab === 'merger' ? 'text-blue-500 border-b-2 border-blue-500 bg-white/5' : 'text-white/50 hover:text-white'}`}>🔗 Merger</button>
           </div>
-          
+
           <div className="p-4 flex-1 overflow-y-auto">
             {activeLeftTab === 'media' && (
               <div className="space-y-4">
@@ -969,7 +798,6 @@ export default function VideoEditorPage() {
 
             {activeLeftTab === 'audio' && (
               <div className="space-y-4">
-                {/* Voiceover Recorder UI */}
                 <div className="p-3 bg-white/5 border border-white/10 rounded-lg text-center">
                   <h5 className="text-[11px] font-bold text-white mb-2">🎙️ Record Voiceover</h5>
                   {!isRecording ? (
@@ -985,7 +813,6 @@ export default function VideoEditorPage() {
                   )}
                 </div>
 
-                {/* Background tracks */}
                 <div className="space-y-2">
                   <h4 className="text-[10px] font-bold text-white/40 uppercase tracking-wider">Royalty-Free Audio</h4>
                   {presetAudioTracks.map((track, idx) => (
@@ -1047,7 +874,6 @@ export default function VideoEditorPage() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {/* Video 1 Selection */}
                     <div className="space-y-2 p-3 bg-white/5 border border-white/10 rounded-lg">
                       <label className="text-[10px] font-bold text-blue-400 uppercase">Video A (First Clip)</label>
                       <select value={mergeVideo1Id} onChange={e => {
@@ -1064,7 +890,7 @@ export default function VideoEditorPage() {
                           <option key={v.id} value={v.id}>{v.name} ({(v.duration || 0).toFixed(1)}s)</option>
                         ))}
                       </select>
-                      
+
                       {mergeVideo1Id && (
                         <div className="space-y-2 pt-2 border-t border-white/5">
                           <div className="flex justify-between text-[10px] text-white/60">
@@ -1085,7 +911,6 @@ export default function VideoEditorPage() {
                       )}
                     </div>
 
-                    {/* Video 2 Selection */}
                     <div className="space-y-2 p-3 bg-white/5 border border-white/10 rounded-lg">
                       <label className="text-[10px] font-bold text-purple-400 uppercase">Video B (Second Clip)</label>
                       <select value={mergeVideo2Id} onChange={e => {
@@ -1102,7 +927,7 @@ export default function VideoEditorPage() {
                           <option key={v.id} value={v.id}>{v.name} ({(v.duration || 0).toFixed(1)}s)</option>
                         ))}
                       </select>
-                      
+
                       {mergeVideo2Id && (
                         <div className="space-y-2 pt-2 border-t border-white/5">
                           <div className="flex justify-between text-[10px] text-white/60">
@@ -1123,8 +948,7 @@ export default function VideoEditorPage() {
                       )}
                     </div>
 
-                    {/* Merge Trigger Button */}
-                    <button 
+                    <button
                       disabled={isProcessing || !ready || !mergeVideo1Id || !mergeVideo2Id}
                       onClick={() => {
                         const file1 = mediaLibrary.find(v => v.id === mergeVideo1Id);
@@ -1139,7 +963,6 @@ export default function VideoEditorPage() {
                       {isProcessing ? 'Merging Videos...' : 'Stitch & Merge Videos'}
                     </button>
 
-                    {/* Progress loader */}
                     {mergeProgress && (
                       <div className="p-3 bg-white/5 border border-white/10 rounded-lg text-center space-y-2 animate-pulse">
                         <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
@@ -1150,6 +973,7 @@ export default function VideoEditorPage() {
                 )}
               </div>
             )}
+          </div>
         </div>
 
         {/* CENTER PANEL: CANVAS PREVIEW */}
@@ -1158,87 +982,84 @@ export default function VideoEditorPage() {
             <span>{Math.floor(currentTime / 60).toString().padStart(2, '0')}:{(currentTime % 60).toFixed(1).padStart(4, '0')}</span>
           </div>
           <div className="flex-1 relative overflow-hidden flex items-center justify-center p-8" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,255,255,0.05) 1px, transparent 0)', backgroundSize: '24px 24px' }}>
-            
+
             <div className="bg-black shadow-2xl relative border border-white/10 overflow-hidden" style={{ width: '100%', maxWidth: '800px', aspectRatio: '16/9' }}>
-               {/* Background elements to manage audio clips (which don't show on screen but need to play) */}
-               {tracks.find(t => t.type === 'audio')?.clips.map(clip => {
-                 const isActive = currentTime >= clip.startAt && currentTime <= (clip.startAt + (clip.trimEnd - clip.trimStart));
-                 if (!isActive) return null;
-                 return (
-                   <PreviewAudio
-                     key={clip.id}
-                     src={clip.fileUrl || ''}
-                     isPlaying={isPlaying}
-                     timelineTime={currentTime}
-                     startAt={clip.startAt}
-                     trimStart={clip.trimStart}
-                     trimEnd={clip.trimEnd}
-                     volume={clip.volume}
-                     speed={clip.speed || 1}
-                   />
-                 );
-               })}
+              {tracks.find(t => t.type === 'audio')?.clips.map(clip => {
+                const isActive = currentTime >= clip.startAt && currentTime <= (clip.startAt + (clip.trimEnd - clip.trimStart));
+                if (!isActive) return null;
+                return (
+                  <PreviewAudio
+                    key={clip.id}
+                    src={clip.fileUrl || ''}
+                    isPlaying={isPlaying}
+                    timelineTime={currentTime}
+                    startAt={clip.startAt}
+                    trimStart={clip.trimStart}
+                    trimEnd={clip.trimEnd}
+                    volume={clip.volume}
+                    speed={clip.speed || 1}
+                  />
+                );
+              })}
 
-               {/* Visual preview layers */}
-               {tracks.map(track => {
-                 if (track.type === 'audio') return null; // handled separately above
-                 return track.clips.map(clip => {
-                   const isActive = currentTime >= clip.startAt && currentTime <= (clip.startAt + (clip.trimEnd - clip.trimStart));
-                   if (!isActive) return null;
+              {tracks.map(track => {
+                if (track.type === 'audio') return null;
+                return track.clips.map(clip => {
+                  const isActive = currentTime >= clip.startAt && currentTime <= (clip.startAt + (clip.trimEnd - clip.trimStart));
+                  if (!isActive) return null;
 
-                   if (clip.type === 'video') {
-                     return (
-                       <div key={clip.id} className="absolute inset-0 flex items-center justify-center" 
-                         style={{ 
-                           opacity: clip.opacity, 
-                           transform: `scale(${clip.scale}) rotate(${clip.rotation}deg) translate(${clip.posX}px, ${clip.posY}px)`,
-                           filter: clip.filter || 'none',
-                           transition: 'filter 0.15s ease'
-                         }}>
-                         {clip.isImage ? (
-                           <img src={clip.fileUrl} className="w-full h-full object-cover" />
-                         ) : (
-                           <PreviewVideo
-                             src={clip.fileUrl || ''}
-                             isPlaying={isPlaying}
-                             timelineTime={currentTime}
-                             startAt={clip.startAt}
-                             trimStart={clip.trimStart}
-                             trimEnd={clip.trimEnd}
-                             volume={clip.volume}
-                             speed={clip.speed || 1}
-                           />
-                         )}
-                       </div>
-                     );
-                   }
-                   if (clip.type === 'text') {
-                     return (
-                       <div key={clip.id} className="absolute inset-0 flex items-center justify-center pointer-events-none" 
-                         style={{ 
-                           opacity: clip.opacity, 
-                           transform: `scale(${clip.scale}) rotate(${clip.rotation}deg) translate(${clip.posX}px, ${clip.posY}px)`
-                         }}>
-                         <span style={{ 
-                           color: clip.color, 
-                           fontFamily: clip.fontFamily, 
-                           fontSize: '3rem', 
-                           fontWeight: 'bold', 
-                           textShadow: clip.textShadow || '2px 2px 4px rgba(0,0,0,0.5)',
-                           whiteSpace: 'pre-wrap',
-                           textAlign: 'center'
-                         }}>{clip.text}</span>
-                       </div>
-                     );
-                   }
-                   return null;
-                 });
-               })}
+                  if (clip.type === 'video') {
+                    return (
+                      <div key={clip.id} className="absolute inset-0 flex items-center justify-center"
+                        style={{
+                          opacity: clip.opacity,
+                          transform: `scale(${clip.scale}) rotate(${clip.rotation}deg) translate(${clip.posX}px, ${clip.posY}px)`,
+                          filter: clip.filter || 'none',
+                          transition: 'filter 0.15s ease'
+                        }}>
+                        {clip.isImage ? (
+                          <img src={clip.fileUrl} className="w-full h-full object-cover" />
+                        ) : (
+                          <PreviewVideo
+                            src={clip.fileUrl || ''}
+                            isPlaying={isPlaying}
+                            timelineTime={currentTime}
+                            startAt={clip.startAt}
+                            trimStart={clip.trimStart}
+                            trimEnd={clip.trimEnd}
+                            volume={clip.volume}
+                            speed={clip.speed || 1}
+                          />
+                        )}
+                      </div>
+                    );
+                  }
+                  if (clip.type === 'text') {
+                    return (
+                      <div key={clip.id} className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                        style={{
+                          opacity: clip.opacity,
+                          transform: `scale(${clip.scale}) rotate(${clip.rotation}deg) translate(${clip.posX}px, ${clip.posY}px)`
+                        }}>
+                        <span style={{
+                          color: clip.color,
+                          fontFamily: clip.fontFamily,
+                          fontSize: '3rem',
+                          fontWeight: 'bold',
+                          textShadow: clip.textShadow || '2px 2px 4px rgba(0,0,0,0.5)',
+                          whiteSpace: 'pre-wrap',
+                          textAlign: 'center'
+                        }}>{clip.text}</span>
+                      </div>
+                    );
+                  }
+                  return null;
+                });
+              })}
             </div>
 
           </div>
-          
-          {/* Player Controls */}
+
           <div className="h-14 bg-[#141414] border-t border-white/10 flex items-center justify-center gap-6 px-4">
             <button onClick={() => setCurrentTime(0)} className="text-white/50 hover:text-white transition" title="Rewind to start">⏮</button>
             <button className="text-white/50 hover:text-white transition" onClick={() => setCurrentTime(p => Math.max(0, p - 1))}>⏪ 1s</button>
@@ -1271,10 +1092,9 @@ export default function VideoEditorPage() {
                 <button onClick={() => setActiveClipId(null)} className="text-xs text-white/40 hover:text-white">Deselect</button>
               </div>
 
-              {/* Transform Section */}
               <div className="space-y-4">
                 <h4 className="text-xs font-bold text-white/50 uppercase tracking-widest">Transform</h4>
-                
+
                 <div className="grid grid-cols-[1fr_2fr] gap-2 items-center">
                   <label className="text-xs text-white/70">Scale</label>
                   <div className="flex items-center gap-2">
@@ -1311,7 +1131,6 @@ export default function VideoEditorPage() {
                 </div>
               </div>
 
-              {/* Text specific */}
               {activeClip.type === 'text' && (
                 <div className="space-y-4 pt-4 border-t border-white/10 text-left">
                   <h4 className="text-xs font-bold text-white/50 uppercase tracking-widest">Text Style</h4>
@@ -1344,7 +1163,6 @@ export default function VideoEditorPage() {
                 </div>
               )}
 
-              {/* Audio specific */}
               {(activeClip.type === 'audio' || activeClip.type === 'video') && (
                 <div className="space-y-4 pt-4 border-t border-white/10">
                   <h4 className="text-xs font-bold text-white/50 uppercase tracking-widest">Audio & Playback</h4>
@@ -1373,14 +1191,12 @@ export default function VideoEditorPage() {
                 </div>
               )}
 
-              {/* Clip visual filters */}
               {activeClip.type === 'video' && (
                 <div className="space-y-4 pt-4 border-t border-white/10 text-left">
                   <h4 className="text-xs font-bold text-white/50 uppercase tracking-widest">Applied Filter</h4>
                   <p className="text-xs text-white/70 capitalize">Active: {effectFilters.find(f => f.filter === activeClip.filter)?.name || "Custom"}</p>
                 </div>
               )}
-
             </div>
           ) : (
             <div className="p-8 text-center text-white/30 text-xs flex flex-col items-center justify-center h-full">
@@ -1391,10 +1207,8 @@ export default function VideoEditorPage() {
         </div>
       </div>
 
-      {/* BOTTOM: MULTI-TRACK TIMELINE */}
+      {/* TIMELINE SECTION */}
       <div className="h-64 bg-[#0a0a0a] border-t border-white/10 flex flex-col flex-shrink-0">
-        
-        {/* Timeline Toolbar */}
         <div className="h-8 bg-[#141414] border-b border-white/10 flex items-center justify-between px-4">
           <div className="flex items-center gap-3">
             <button onClick={splitActiveClip} className="text-[10px] text-white/75 bg-blue-900/40 hover:bg-blue-950/70 border border-blue-800/40 px-3 py-1 rounded transition-colors flex items-center gap-1 font-bold">
@@ -1411,26 +1225,21 @@ export default function VideoEditorPage() {
           </div>
         </div>
 
-        {/* Tracks Area */}
         <div className="flex-1 overflow-y-auto overflow-x-auto relative custom-scrollbar">
-          
-          {/* Time ruler */}
-          <div 
+          <div
             ref={rulerRef}
             onMouseDown={handleRulerMouseDown}
-            className="h-6 border-b border-white/10 relative cursor-ew-resize bg-[#111]" 
-            style={{ 
+            className="h-6 border-b border-white/10 relative cursor-ew-resize bg-[#111]"
+            style={{
               width: '2000px',
-              backgroundImage: 'repeating-linear-gradient(to right, transparent, transparent 49px, rgba(255,255,255,0.06) 49px, rgba(255,255,255,0.06) 50px)' 
+              backgroundImage: 'repeating-linear-gradient(to right, transparent, transparent 49px, rgba(255,255,255,0.06) 49px, rgba(255,255,255,0.06) 50px)'
             }}
           >
-            {/* Tick labels */}
             {Array.from({ length: 40 }).map((_, idx) => (
               <span key={idx} className="absolute text-[8px] font-mono text-white/30 top-1 pointer-events-none" style={{ left: `${idx * 50 * zoom}px` }}>
                 {idx}s
               </span>
             ))}
-            {/* Playhead indicator line */}
             <div className="absolute top-0 bottom-0 w-px bg-red-500 z-50 pointer-events-none" style={{ left: `${currentTime * 50 * zoom}px` }}>
               <div className="absolute top-0 -left-1.5 w-3 h-3 bg-red-500 rounded-sm" />
             </div>
@@ -1443,14 +1252,12 @@ export default function VideoEditorPage() {
                   {track.type}
                 </div>
                 <div className="flex-1 relative overflow-hidden bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(255,255,255,0.01)_10px,rgba(255,255,255,0.01)_20px)]">
-                  
-                  {/* Clips */}
                   {track.clips.map(clip => (
-                    <div key={clip.id} 
+                    <div key={clip.id}
                       onClick={(e) => { e.stopPropagation(); setActiveClipId(clip.id); }}
                       className={`absolute top-1 bottom-1 rounded border overflow-hidden cursor-pointer ${activeClipId === clip.id ? 'border-white z-20 shadow-[0_0_10px_rgba(255,255,255,0.3)]' : 'border-white/20 z-10'}`}
-                      style={{ 
-                        left: `${clip.startAt * 50 * zoom}px`, 
+                      style={{
+                        left: `${clip.startAt * 50 * zoom}px`,
                         width: `${(clip.trimEnd - clip.trimStart) * 50 * zoom}px`,
                         backgroundColor: clip.type === 'video' ? (clip.isImage ? '#1e3a8a' : '#2563eb') : clip.type === 'audio' ? '#16a34a' : '#9333ea'
                       }}
@@ -1460,20 +1267,16 @@ export default function VideoEditorPage() {
                         <span>{clip.type === 'video' ? (clip.isImage ? '🖼️' : '📹') : clip.type === 'audio' ? '🎵' : '✍️'}</span>
                         <span className="truncate">{clip.name}</span>
                       </div>
-                      
-                      {/* Left and Right trim adjustment sliders (simulate visuals) */}
                       <div className="absolute left-0 top-0 bottom-0 w-1 bg-white/30 hover:bg-white cursor-ew-resize" title="Trim Start" />
                       <div className="absolute right-0 top-0 bottom-0 w-1 bg-white/30 hover:bg-white cursor-ew-resize" title="Trim End" />
                     </div>
                   ))}
-
                 </div>
               </div>
             ))}
           </div>
-
         </div>
-      
+      </div>
     </div>
   );
 }
