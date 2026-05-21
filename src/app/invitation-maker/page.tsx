@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Online Invitation Maker - Birthday, Party & Event Invites',
     description: 'Beautiful digital invitations for every occasion. Easy to customize and share.',
-    images: [{ url: '/og-invitation-maker.png', width: 1200, height: 630 }],
+    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
   },
   alternates: {
     canonical: 'https://shivanshstudio.com/invitation-maker',

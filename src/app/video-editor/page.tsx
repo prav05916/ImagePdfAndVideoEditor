@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Online Video Editor - Trim, Merge & Edit Videos Fast',
     description: 'Simple and powerful video editing in your browser. Perfect for social media and quick edits.',
-    images: [{ url: '/og-video-editor.png', width: 1200, height: 630 }],
+    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
   },
   alternates: {
     canonical: 'https://shivanshstudio.com/video-editor',

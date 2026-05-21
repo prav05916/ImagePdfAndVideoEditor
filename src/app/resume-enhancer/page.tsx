@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Resume Photo Enhancer - Professional AI Headshot Tool',
     description: 'Get the perfect professional photo for your resume. AI-powered enhancement for job seekers.',
-    images: [{ url: '/og-resume-enhancer.png', width: 1200, height: 630 }],
+    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
   },
   alternates: {
     canonical: 'https://shivanshstudio.com/resume-enhancer',

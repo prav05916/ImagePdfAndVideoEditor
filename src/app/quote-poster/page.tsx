@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Quote Poster Maker - Create Inspirational Designs Online',
     description: 'Transform your words into beautiful designs. Perfect for sharing and printing.',
-    images: [{ url: '/og-quote-poster.png', width: 1200, height: 630 }],
+    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
   },
   alternates: {
     canonical: 'https://shivanshstudio.com/quote-poster',

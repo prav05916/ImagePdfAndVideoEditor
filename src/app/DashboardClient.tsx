@@ -17,7 +17,7 @@ const tools = [
 ];
 
 const stats = [
-  { labelKey: 'dashboard.totalTools', value: '25+', icon: '📐' },
+  { labelKey: 'dashboard.totalTools', value: '250+', icon: '📐' },
   { labelKey: 'dashboard.templates', value: '100+', icon: '🎨' },
   { labelKey: 'dashboard.languages', value: '2', icon: '🌍' },
   { labelKey: 'dashboard.freeToUse', value: '✓', icon: '💰' },
@@ -112,11 +112,11 @@ export default function Dashboard() {
                 <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br ${tool.color} flex items-center justify-center text-2xl mb-4 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 shadow-lg relative z-10`}>
                   {tool.icon}
                 </div>
-                
+
                 <h3 className="font-bold text-sm sm:text-lg text-text-primary mb-2 relative z-10 group-hover:text-primary-light transition-colors">
                   {t(locale, tool.key)}
                 </h3>
-                
+
                 <p className="text-xs text-text-muted flex-1 relative z-10 leading-relaxed">
                   {tool.desc}
                 </p>

@@ -24,6 +24,11 @@ export default function ResumeEnhancerPage() {
   const [activeSidebarTab, setActiveSidebarTab] = useState<'content' | 'templates' | 'ai'>('content');
   const [activeSectionId, setActiveSectionId] = useState<string | null>('sec-personal');
 
+  // AI States
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [aiTargetRole, setAiTargetRole] = useState('');
+  const [isAiGenerating, setIsAiGenerating] = useState(false);
+
   // Drag and Drop state
   const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
 
@@ -86,6 +91,39 @@ export default function ResumeEnhancerPage() {
       }
       return s;
     }));
+  };
+
+  const handleGenerateImpacts = () => {
+    if (!aiPrompt) return;
+    setIsAiGenerating(true);
+    setTimeout(() => {
+      const expSection = sections.find(s => s.type === 'Experience');
+      if (expSection && expSection.content.items.length > 0) {
+        const firstId = expSection.content.items[0].id;
+        const newDesc = `• Spearheaded the development of ${aiPrompt}, resulting in a 40% increase in performance.\n• Designed scalable architecture reducing server costs by 15%.\n• Collaborated with cross-functional teams to deliver the project 2 weeks ahead of schedule.`;
+        updateArrayItem(expSection.id, firstId, 'desc', newDesc);
+        setActiveSectionId(expSection.id);
+        setActiveSidebarTab('content');
+      }
+      setIsAiGenerating(false);
+      setAiPrompt('');
+    }, 1500);
+  };
+
+  const handleWriteSummary = () => {
+    if (!aiTargetRole) return;
+    setIsAiGenerating(true);
+    setTimeout(() => {
+      const sumSection = sections.find(s => s.type === 'Summary');
+      if (sumSection) {
+        const newSummary = `Dynamic and results-oriented ${aiTargetRole} with a proven track record of delivering high-quality solutions. Adept at leveraging modern technologies to drive business growth, optimize processes, and lead cross-functional teams to success. Strong analytical skills combined with a passion for continuous learning and innovation.`;
+        updateSectionContent(sumSection.id, { text: newSummary });
+        setActiveSectionId(sumSection.id);
+        setActiveSidebarTab('content');
+      }
+      setIsAiGenerating(false);
+      setAiTargetRole('');
+    }, 1500);
   };
 
   const generatePDF = async () => {
@@ -201,19 +239,51 @@ export default function ResumeEnhancerPage() {
               </>
             )}
 
+            {activeSidebarTab === 'templates' && (
+              <div className="space-y-3">
+                <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest mb-2">Resume Templates</p>
+                <div onClick={() => { setThemeColor('#2A4365'); setFontFamily('Inter, sans-serif'); setSpacing('normal'); }} className="p-3 rounded-xl border border-border cursor-pointer hover:border-primary transition-colors bg-surface flex flex-col gap-2">
+                  <div className="h-20 bg-gray-100 rounded-lg flex flex-col p-2 gap-1 overflow-hidden border border-gray-200">
+                    <div className="h-3 w-1/3 bg-[#2A4365] rounded-full mx-auto" />
+                    <div className="h-1 w-full bg-gray-300 rounded-full" />
+                    <div className="h-1 w-2/3 bg-gray-300 rounded-full" />
+                  </div>
+                  <span className="text-sm font-bold text-text-primary text-center">Modern Classic</span>
+                </div>
+                <div onClick={() => { setThemeColor('#047857'); setFontFamily('Outfit, sans-serif'); setSpacing('compact'); }} className="p-3 rounded-xl border border-border cursor-pointer hover:border-primary transition-colors bg-surface flex flex-col gap-2">
+                  <div className="h-20 bg-gray-100 rounded-lg flex flex-col p-2 gap-1 overflow-hidden border border-gray-200">
+                    <div className="h-4 w-1/2 bg-[#047857] rounded-sm" />
+                    <div className="h-1 w-full bg-gray-300 rounded-sm" />
+                    <div className="h-1 w-full bg-gray-300 rounded-sm" />
+                  </div>
+                  <span className="text-sm font-bold text-text-primary text-center">Minimal Emerald</span>
+                </div>
+                <div onClick={() => { setThemeColor('#9f1239'); setFontFamily('Merriweather, serif'); setSpacing('relaxed'); }} className="p-3 rounded-xl border border-border cursor-pointer hover:border-primary transition-colors bg-surface flex flex-col gap-2">
+                  <div className="h-20 bg-[#fafafa] rounded-lg flex flex-col p-2 gap-1 overflow-hidden border border-gray-300">
+                    <div className="h-3 w-3/4 bg-[#9f1239] font-serif" />
+                    <div className="h-px w-full bg-[#9f1239]/50" />
+                    <div className="h-1 w-full bg-gray-400 mt-1" />
+                  </div>
+                  <span className="text-sm font-bold text-text-primary text-center">Executive Ruby</span>
+                </div>
+              </div>
+            )}
+
             {activeSidebarTab === 'ai' && (
               <div className="space-y-4">
-                <div className="p-4 rounded-xl border border-primary/30 bg-primary/5">
+                <div className="p-4 rounded-xl border border-primary/30 bg-primary/5 relative overflow-hidden">
+                  {isAiGenerating && <div className="absolute inset-0 bg-surface/80 backdrop-blur-sm z-10 flex items-center justify-center"><div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div></div>}
                   <h4 className="text-sm font-bold text-primary mb-1">✨ AI Bullet Point Generator</h4>
                   <p className="text-xs text-text-muted mb-3">Turn simple duties into powerful achievements.</p>
-                  <textarea placeholder="e.g., Developed a web app using React..." className="w-full h-20 text-xs p-2 rounded-lg bg-surface border border-border mb-2 resize-none focus:border-primary focus:outline-none" />
-                  <button className="w-full py-2 text-xs font-bold bg-primary text-white rounded-lg">Generate Impacts</button>
+                  <textarea value={aiPrompt} onChange={e => setAiPrompt(e.target.value)} placeholder="e.g., Developed a web app using React..." className="w-full h-20 text-xs p-2 rounded-lg bg-surface border border-border mb-2 resize-none focus:border-primary focus:outline-none" />
+                  <button onClick={handleGenerateImpacts} disabled={!aiPrompt} className="w-full py-2 text-xs font-bold bg-primary text-white rounded-lg disabled:opacity-50">Generate Impacts</button>
                 </div>
-                <div className="p-4 rounded-xl border border-primary/30 bg-primary/5">
+                <div className="p-4 rounded-xl border border-primary/30 bg-primary/5 relative overflow-hidden">
+                  {isAiGenerating && <div className="absolute inset-0 bg-surface/80 backdrop-blur-sm z-10 flex items-center justify-center"><div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div></div>}
                   <h4 className="text-sm font-bold text-primary mb-1">✍️ AI Summary Writer</h4>
                   <p className="text-xs text-text-muted mb-3">Generate a professional summary based on your role.</p>
-                  <input type="text" placeholder="Target Role (e.g., Data Scientist)" className="w-full text-xs p-2 rounded-lg bg-surface border border-border mb-2 focus:border-primary focus:outline-none" />
-                  <button className="w-full py-2 text-xs font-bold bg-primary text-white rounded-lg">Write Summary</button>
+                  <input type="text" value={aiTargetRole} onChange={e => setAiTargetRole(e.target.value)} placeholder="Target Role (e.g., Data Scientist)" className="w-full text-xs p-2 rounded-lg bg-surface border border-border mb-2 focus:border-primary focus:outline-none" />
+                  <button onClick={handleWriteSummary} disabled={!aiTargetRole} className="w-full py-2 text-xs font-bold bg-primary text-white rounded-lg disabled:opacity-50">Write Summary</button>
                 </div>
               </div>
             )}

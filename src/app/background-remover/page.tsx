@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'AI Background Remover - Remove Image Background Instantly',
     description: 'High-quality background removal using AI. Free, fast, and accurate.',
-    images: [{ url: '/og-bg-remover.png', width: 1200, height: 630 }],
+    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
   },
   alternates: {
     canonical: 'https://shivanshstudio.com/background-remover',

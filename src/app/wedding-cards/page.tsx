@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Wedding Invitation Card Maker - Create Traditional & Modern Cards',
     description: 'Design beautiful Indian wedding invitation cards online. Traditional, Royal, Floral, and Vintage styles for your special day.',
-    images: [{ url: '/og-wedding-cards.png', width: 1200, height: 630 }],
+    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
   },
   alternates: {
     canonical: 'https://shivanshstudio.com/wedding-cards',

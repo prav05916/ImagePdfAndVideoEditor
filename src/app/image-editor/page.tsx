@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Online Photo Editor - Free Image Editing & Design Tool',
     description: 'Professional-grade photo editing tools right in your browser. Free, fast, and easy to use.',
-    images: [{ url: '/og-image-editor.png', width: 1200, height: 630 }],
+    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
   },
   alternates: {
     canonical: 'https://shivanshstudio.com/image-editor',

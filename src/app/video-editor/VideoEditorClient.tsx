@@ -230,16 +230,7 @@ export default function VideoEditorPage() {
     }
   };
 
-  if (!ready) {
-    return (
-      <div className="h-[calc(100vh-4rem)] flex items-center justify-center bg-[#0d0d0d] text-white">
-        <div className="text-center space-y-4">
-          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="font-bold text-lg">Initializing FFmpeg WASM Core...</p>
-        </div>
-      </div>
-    );
-  }
+
 
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-col bg-[#0d0d0d] text-white overflow-hidden font-sans">
@@ -252,8 +243,9 @@ export default function VideoEditorPage() {
           <button className="text-xs font-semibold px-3 py-1.5 rounded hover:bg-white/10 transition">Edit</button>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-[10px] text-white/50 uppercase tracking-widest font-bold">1080p • 60FPS</span>
-          <button onClick={exportVideo} disabled={isProcessing} className="px-6 py-1.5 text-xs font-bold bg-blue-600 hover:bg-blue-500 rounded text-white transition-colors disabled:opacity-50">
+          {!ready && <span className="text-[10px] text-yellow-500 uppercase tracking-widest font-bold animate-pulse">⏳ Engine Loading...</span>}
+          {ready && <span className="text-[10px] text-white/50 uppercase tracking-widest font-bold">1080p • 60FPS</span>}
+          <button onClick={exportVideo} disabled={isProcessing || !ready} className="px-6 py-1.5 text-xs font-bold bg-blue-600 hover:bg-blue-500 rounded text-white transition-colors disabled:opacity-50">
             {isProcessing ? 'Rendering...' : 'Export Video'}
           </button>
         </div>

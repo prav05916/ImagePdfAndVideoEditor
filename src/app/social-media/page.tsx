@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Social Media Post Maker - Design for Instagram, Facebook & Twitter',
     description: 'Stunning social media designs in minutes. Professional templates for all major platforms.',
-    images: [{ url: '/og-social-media.png', width: 1200, height: 630 }],
+    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
   },
   alternates: {
     canonical: 'https://shivanshstudio.com/social-media',
