@@ -1,11 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '@/lib/store';
 import { t } from '@/lib/i18n';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { loadStripe } from '@stripe/stripe-js';
+
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || 'pk_test_placeholder');
 
 // Advanced Types
 type SectionType = 'Personal' | 'Summary' | 'Experience' | 'Education' | 'Skills' | 'Projects' | 'Custom';
@@ -23,6 +26,17 @@ export default function ResumeEnhancerPage() {
   const [zoom, setZoom] = useState(100);
   const [activeSidebarTab, setActiveSidebarTab] = useState<'content' | 'templates' | 'ai'>('content');
   const [activeSectionId, setActiveSectionId] = useState<string | null>('sec-personal');
+  const [isPaying, setIsPaying] = useState(false);
+
+  useEffect(() => {
+    const query = new URLSearchParams(window.location.search);
+    if (query.get('success')) {
+      alert('Payment successful! You can now export your resume.');
+    }
+    if (query.get('canceled')) {
+      alert('Payment was canceled.');
+    }
+  }, []);
 
   // AI States
   const [aiPrompt, setAiPrompt] = useState('');
@@ -282,6 +296,34 @@ export default function ResumeEnhancerPage() {
   const generatePDF = async () => {
     const element = document.getElementById('resume-canvas');
     if (!element) return;
+    
+    const query = new URLSearchParams(window.location.search);
+    if (!query.get('success')) {
+      setIsPaying(true);
+      try {
+        const res = await fetch('/api/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            productName: 'Premium Resume PDF Export',
+            amount: 5000,
+            redirectUrl: window.location.pathname,
+          }),
+        });
+        const { id, error } = await res.json();
+        if (error) throw new Error(error);
+
+        const stripe: any = await stripePromise;
+        await stripe?.redirectToCheckout({ sessionId: id });
+      } catch (err) {
+        console.error('Payment initiation failed', err);
+        alert('Failed to start payment process.');
+      } finally {
+        setIsPaying(false);
+      }
+      return;
+    }
+
     setIsProcessing(true);
     try {
       const canvas = await html2canvas(element, { scale: 3, useCORS: true });
@@ -345,8 +387,8 @@ export default function ResumeEnhancerPage() {
           <button className="px-4 py-1.5 text-xs font-bold bg-surface border border-border hover:border-primary text-text-primary rounded-lg transition-colors">
             ⬇️ DOCX
           </button>
-          <button onClick={generatePDF} disabled={isProcessing} className="px-5 py-1.5 text-xs font-bold gradient-primary text-white rounded-lg shadow-lg hover:shadow-xl transition-all disabled:opacity-50">
-            {isProcessing ? 'Rendering...' : '📄 Export PDF'}
+          <button onClick={generatePDF} disabled={isProcessing || isPaying} className="px-5 py-1.5 text-xs font-bold gradient-primary text-white rounded-lg shadow-lg hover:shadow-xl transition-all disabled:opacity-50">
+            {isProcessing ? 'Rendering...' : isPaying ? 'Redirecting...' : '📄 Export PDF (₹50)'}
           </button>
         </div>
       </div>

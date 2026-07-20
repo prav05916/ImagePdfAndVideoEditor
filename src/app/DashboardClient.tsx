@@ -14,6 +14,7 @@ const tools = [
   { key: 'nav.invitationMaker', href: '/invitation-maker', icon: '🎉', color: 'from-pink-500 to-rose-600', desc: 'Create stunning invitations for any event.', tag: 'HOT' },
   { key: 'nav.socialMedia', href: '/social-media', icon: '📸', color: 'from-cyan-500 to-blue-600', desc: 'Generate engaging social media posts easily.', tag: 'PRO' },
   { key: 'nav.quotePoster', href: '/quote-poster', icon: '✍️', color: 'from-violet-500 to-fuchsia-600', desc: 'Design inspiring and highly shareable quote posters.', tag: 'HOT' },
+  { key: 'nav.passportMaker', href: '/passport-maker', icon: '🛂', color: 'from-blue-600 to-indigo-800', desc: 'Create AI-processed passport photos for exams.', tag: 'NEW' },
 ];
 
 const stats = [

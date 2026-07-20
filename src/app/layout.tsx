@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     template: "%s | ShivanshStudio",
   },
   description:
-    "Create stunning wedding cards, edit images, generate social media posts, and more with ShivanshStudio. Free online design tools with Hindi & English support.",
+    "Create stunning wedding cards, edit images, make passport size photos, generate social media posts, and more with ShivanshStudio. Free online design tools with Hindi & English support.",
   keywords: [
     "image editor",
     "wedding card generator",
@@ -25,6 +25,9 @@ export const metadata: Metadata = {
     "online design tool",
     "Indian wedding cards",
     "Hindi wedding invitation",
+    "passport photo maker",
+    "passport size image editor",
+    "exam photo maker"
   ],
   openGraph: {
     title: "ShivanshStudio - All-in-One Image Editor & Design Platform",
@@ -110,7 +113,7 @@ export default function RootLayout({
             "@type": "WebApplication",
             "name": "ShivanshStudio",
             "url": "https://www.shivansh-studio.store",
-            "description": "All-in-one image editor, video editor, and wedding card generator.",
+            "description": "All-in-one image editor, video editor, passport size photo maker, and wedding card generator.",
             "applicationCategory": "DesignApplication",
             "operatingSystem": "Web",
             "author": {

@@ -2,13 +2,14 @@ import type { Metadata } from 'next';
 import ResumeEnhancerClient from './ResumeEnhancerClient';
 
 export const metadata: Metadata = {
-  title: 'AI Resume Builder - ATS Optimizer & Free CV Maker Online',
-  description: 'Create an optimized, professional resume with AI. Live ATS score checker, targeted keyword integration, performance metrics optimization, and clean PDF exports for job seekers.',
-  keywords: ['AI resume builder', 'ATS resume optimizer', 'free CV maker online', 'ATS score checker', 'professional resume template', 'resume keyword optimization', 'metrics-driven CV builder'],
+  title: 'Resume Photo Enhancer - Professional ATS Optimization | ShivanshStudio',
+  description: 'Enhance your resume profile photo with AI. Get professional results that pass ATS checks and make a great first impression for job applications.',
+  keywords: ['resume photo enhancer', 'professional profile picture', 'ats friendly photo', 'linkedin photo editor', 'cv photo maker', 'ai photo enhancer', 'job application photo'],
   openGraph: {
-    title: 'AI Resume Builder - ATS Optimizer & Free CV Maker Online',
-    description: 'Create high-scoring ATS-optimized resumes. Get dynamic suggestions, keyword improvements, and export professional PDFs.',
+    title: 'Resume Photo Enhancer - Professional Profile Pictures',
+    description: 'Enhance your resume profile photo with AI for professional ATS-friendly results.',
     images: [{ url: "/og-image.png", width: 1200, height: 630 }],
+    type: 'website',
   },
   alternates: {
     canonical: 'https://www.shivansh-studio.store/resume-enhancer',
@@ -23,8 +24,9 @@ export default function Page() {
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
             "@context": "https://schema.org",
-            "@type": "SoftwareApplication",
-            "name": "AI Resume Builder & ATS Optimizer",
+            "@type": "WebApplication",
+            "name": "Resume Photo Enhancer",
+            "url": "https://www.shivansh-studio.store/resume-enhancer",
             "operatingSystem": "Web",
             "applicationCategory": "BusinessApplication",
             "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },

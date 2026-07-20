@@ -7,6 +7,9 @@ import { useAppStore } from '@/lib/store';
 import { t } from '@/lib/i18n';
 import PageHeader from '@/components/shared/PageHeader';
 import FileUpload from '@/components/ui/FileUpload';
+import { loadStripe } from '@stripe/stripe-js';
+
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || 'pk_test_placeholder');
 
 type Tab = 'crop' | 'resize' | 'adjust' | 'transform' | 'enhance' | 'text';
 
@@ -16,6 +19,18 @@ export default function ImageEditorPage() {
   const [activeTab, setActiveTab] = useState<Tab>('adjust');
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const originalImageRef = useRef<HTMLImageElement | null>(null);
+  const [isPaying, setIsPaying] = useState(false);
+
+  // Handle successful payment redirect
+  useEffect(() => {
+    const query = new URLSearchParams(window.location.search);
+    if (query.get('success')) {
+      alert('Payment successful! You can now download your image.');
+    }
+    if (query.get('canceled')) {
+      alert('Payment was canceled.');
+    }
+  }, []);
 
   // Crop state
   const [crop, setCrop] = useState({ x: 0, y: 0 });
@@ -226,9 +241,37 @@ export default function ImageEditorPage() {
     newImg.src = canvas.toDataURL();
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+
+    const query = new URLSearchParams(window.location.search);
+    if (!query.get('success')) {
+      setIsPaying(true);
+      try {
+        const res = await fetch('/api/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            productName: 'Image Editor Premium Download',
+            amount: 5000,
+            redirectUrl: window.location.pathname,
+          }),
+        });
+        const { id, error } = await res.json();
+        if (error) throw new Error(error);
+
+        const stripe: any = await stripePromise;
+        await stripe?.redirectToCheckout({ sessionId: id });
+      } catch (err) {
+        console.error('Payment initiation failed', err);
+        alert('Failed to start payment process.');
+      } finally {
+        setIsPaying(false);
+      }
+      return;
+    }
+
     const link = document.createElement('a');
     link.download = 'shivanshstudio-edited.png';
     link.href = canvas.toDataURL('image/png');
@@ -297,9 +340,10 @@ export default function ImageEditorPage() {
             <div className="flex flex-wrap gap-3 mt-4">
               <button
                 onClick={handleDownload}
-                className="px-6 py-2.5 gradient-primary text-white rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity shadow-lg"
+                disabled={isPaying}
+                className="px-6 py-2.5 gradient-primary text-white rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity shadow-lg disabled:opacity-50"
               >
-                {t(locale, 'common.downloadPNG')}
+                {isPaying ? 'Redirecting...' : `${t(locale, 'common.downloadPNG')} (₹50)`}
               </button>
               <button
                 onClick={() => { setImage(null); setEnhanced(false); setBrightness(0); setContrast(0); setSaturation(0); setBlur(0); setRotation(0); setFlipH(false); setFlipV(false); setFilterPreset('none'); }}

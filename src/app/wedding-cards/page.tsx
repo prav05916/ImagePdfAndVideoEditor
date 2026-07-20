@@ -2,13 +2,14 @@ import type { Metadata } from 'next';
 import WeddingCardsClient from './WeddingCardsClient';
 
 export const metadata: Metadata = {
-  title: 'Wedding Invitation Card Maker - Create Traditional & Modern Cards Online',
-  description: 'Design beautiful Indian wedding invitation cards online. Choose from traditional, royal, floral, and vintage templates. Download in PNG or PDF. Hindi & English support. Best free digital shaadi card maker.',
-  keywords: ['wedding invitation maker', 'Indian wedding cards', 'digital shaadi card', 'Hindi wedding invitation', 'wedding card design online', 'marriage invitation maker', 'free wedding cards', 'traditional wedding cards'],
+  title: 'Indian Wedding Card Generator - Free Invitation Maker | ShivanshStudio',
+  description: 'Create beautiful, customizable Indian wedding cards online in minutes. Support for Hindi & English templates. Share instantly via WhatsApp.',
+  keywords: ['wedding card generator', 'indian wedding invitations', 'hindi wedding card maker', 'free shaadi cards', 'digital wedding invites', 'customizable wedding templates', 'whatsapp wedding invitation'],
   openGraph: {
-    title: 'Wedding Invitation Card Maker - Create Traditional & Modern Cards',
-    description: 'Design beautiful Indian wedding invitation cards online. Traditional, Royal, Floral, and Vintage styles for your special day.',
+    title: 'Indian Wedding Card Generator - Free Invitation Maker',
+    description: 'Create beautiful, customizable Indian wedding cards online in minutes.',
     images: [{ url: "/og-image.png", width: 1200, height: 630 }],
+    type: 'website',
   },
   alternates: {
     canonical: 'https://www.shivansh-studio.store/wedding-cards',
@@ -23,8 +24,9 @@ export default function Page() {
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
             "@context": "https://schema.org",
-            "@type": "SoftwareApplication",
-            "name": "Wedding Invitation Maker",
+            "@type": "WebApplication",
+            "name": "Wedding Card Generator",
+            "url": "https://www.shivansh-studio.store/wedding-cards",
             "operatingSystem": "Web",
             "applicationCategory": "DesignApplication",
             "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },

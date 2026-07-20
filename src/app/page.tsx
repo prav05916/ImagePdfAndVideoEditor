@@ -3,8 +3,8 @@ import DashboardClient from './DashboardClient';
 
 export const metadata: Metadata = {
   title: 'ShivanshStudio - All-in-One Image Editor & Design Platform',
-  description: 'Create stunning wedding cards, edit images, generate social media posts, and more with ShivanshStudio. Free online design tools with Hindi & English support.',
-  keywords: ['image editor', 'wedding card generator', 'invitation maker', 'social media post', 'background remover', 'quote poster', 'resume photo enhancer', 'online design tool'],
+  description: 'Create stunning wedding cards, edit images, generate social media posts, and make passport size photos for government exams with ShivanshStudio. Free online design tools with Hindi & English support.',
+  keywords: ['image editor', 'wedding card generator', 'invitation maker', 'social media post', 'background remover', 'quote poster', 'resume photo enhancer', 'online design tool', 'passport size photo maker', 'passport photo editor', 'exam photo creator'],
   authors: [{ name: 'ShivanshStudio Team' }],
   openGraph: {
     title: 'ShivanshStudio - Premium Creative Suite',
