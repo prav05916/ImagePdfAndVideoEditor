@@ -9,9 +9,23 @@ import FileUpload from '@/components/ui/FileUpload';
 
 type BgOption = 'transparent' | 'white' | 'custom';
 
+function dataURLtoBlob(dataurl: string): Blob {
+  const arr = dataurl.split(',');
+  const mimeMatch = arr[0].match(/:(.*?);/);
+  const mime = mimeMatch ? mimeMatch[1] : 'image/png';
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+  return new Blob([u8arr], { type: mime });
+}
+
 export default function BackgroundRemoverPage() {
   const { locale } = useAppStore();
   const [originalImage, setOriginalImage] = useState<string | null>(null);
+  const [rawFile, setRawFile] = useState<File | null>(null);
   const [extractedImage, setExtractedImage] = useState<string | null>(null);
   const [processedImage, setProcessedImage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -21,6 +35,7 @@ export default function BackgroundRemoverPage() {
   const imgRef = useRef<HTMLImageElement | null>(null);
 
   const handleFileSelect = (file: File) => {
+    setRawFile(file);
     const reader = new FileReader();
     reader.onload = (e) => {
       setOriginalImage(e.target?.result as string);
@@ -34,19 +49,31 @@ export default function BackgroundRemoverPage() {
     if (!originalImage) return;
     setIsProcessing(true);
     try {
+      let inputBlob: Blob;
+      if (rawFile) {
+        inputBlob = rawFile;
+      } else if (originalImage.startsWith('data:')) {
+        inputBlob = dataURLtoBlob(originalImage);
+      } else {
+        const res = await fetch(originalImage);
+        inputBlob = await res.blob();
+      }
       const { removeBackground } = await import('@imgly/background-removal');
-      const imageBlob = await removeBackground(originalImage, {
+      const publicPath = `${window.location.origin}/imgly/`;
+      const imageBlob = await removeBackground(inputBlob, {
+        publicPath,
+        model: 'isnet_fp16',
         progress: (key: string, current: number, total: number) => console.log(`Downloading ${key}: ${current}/${total}`),
       });
       const url = URL.createObjectURL(imageBlob);
       setExtractedImage(url);
     } catch (error) {
       console.error('BG Removal failed:', error);
-      alert('Failed to remove background. Please try again.');
+      alert('Failed to remove background. Please ensure image file is valid and try again.');
     } finally {
       setIsProcessing(false);
     }
-  }, [originalImage]);
+  }, [originalImage, rawFile]);
 
   // Combine extracted image with selected background
   useEffect(() => {

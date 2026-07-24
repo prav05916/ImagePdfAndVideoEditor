@@ -1,41 +1,76 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Stripe from 'stripe';
+import Razorpay from 'razorpay';
 
-// Initialize Stripe with a placeholder secret key if the environment variable isn't set
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder', {
-  apiVersion: '2025-01-27.acacia' as any, // Typecast to any to avoid version errors if old stripe version
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID!,
+  key_secret: process.env.RAZORPAY_KEY_SECRET!,
 });
+
+// Razorpay minimum is 100 paise (₹1), max sensibly capped at ₹5000
+const MIN_AMOUNT_PAISE = 100;
+const MAX_AMOUNT_PAISE = 500_000;
 
 export async function POST(req: NextRequest) {
   try {
-    const { productName, amount, redirectUrl } = await req.json();
+    const body = await req.json().catch(() => null);
 
-    // The redirectUrl shouldn't contain query params at the end. We assume it's just the page URL.
-    const baseUrl = req.headers.get('origin') || process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-    const finalRedirect = redirectUrl.startsWith('http') ? redirectUrl : `${baseUrl}${redirectUrl}`;
+    if (!body || typeof body !== 'object') {
+      return NextResponse.json(
+        { error: 'Invalid request body.' },
+        { status: 400 }
+      );
+    }
 
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items: [
+    const { productName, amount } = body;
+
+    // ── Input validation ────────────────────────────────────────────────────
+    if (
+      typeof amount !== 'number' ||
+      !Number.isInteger(amount) ||
+      amount < MIN_AMOUNT_PAISE ||
+      amount > MAX_AMOUNT_PAISE
+    ) {
+      return NextResponse.json(
         {
-          price_data: {
-            currency: 'inr',
-            product_data: {
-              name: productName || 'Premium Download',
-            },
-            unit_amount: amount || 5000, // Amount in cents (e.g. 5000 = 50 INR)
-          },
-          quantity: 1,
+          error: `Invalid amount. Must be an integer between ${MIN_AMOUNT_PAISE} and ${MAX_AMOUNT_PAISE} paise.`,
         },
-      ],
-      mode: 'payment',
-      success_url: `${finalRedirect}?success=true`,
-      cancel_url: `${finalRedirect}?canceled=true`,
+        { status: 400 }
+      );
+    }
+
+    if (
+      typeof productName !== 'string' ||
+      productName.trim().length === 0 ||
+      productName.length > 255
+    ) {
+      return NextResponse.json(
+        { error: 'Invalid productName.' },
+        { status: 400 }
+      );
+    }
+
+    // ── Create Razorpay order ────────────────────────────────────────────────
+    const order = await razorpay.orders.create({
+      amount, // already validated in paise
+      currency: 'INR',
+      receipt: `rcpt_${Date.now()}`,
+      notes: {
+        productName: productName.trim(),
+      },
     });
 
-    return NextResponse.json({ id: session.id });
+    return NextResponse.json({
+      orderId: order.id,
+      amount: order.amount,
+      currency: order.currency,
+      keyId: process.env.RAZORPAY_KEY_ID,
+    });
   } catch (err: any) {
-    console.error('Stripe Checkout Error:', err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    // Log full error server-side but return a generic message to the client
+    console.error('Razorpay Order Error:', err);
+    return NextResponse.json(
+      { error: 'Payment could not be initiated. Please try again.' },
+      { status: 500 }
+    );
   }
 }

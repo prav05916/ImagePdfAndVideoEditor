@@ -7,9 +7,18 @@ import { useAppStore } from '@/lib/store';
 import { t } from '@/lib/i18n';
 import PageHeader from '@/components/shared/PageHeader';
 import FileUpload from '@/components/ui/FileUpload';
-import { loadStripe } from '@stripe/stripe-js';
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || 'pk_test_placeholder');
+// Load Razorpay script dynamically
+function loadRazorpayScript(): Promise<boolean> {
+  return new Promise((resolve) => {
+    if ((window as any).Razorpay) return resolve(true);
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+}
 
 type Tab = 'crop' | 'resize' | 'adjust' | 'transform' | 'enhance' | 'text';
 
@@ -21,10 +30,13 @@ export default function ImageEditorPage() {
   const originalImageRef = useRef<HTMLImageElement | null>(null);
   const [isPaying, setIsPaying] = useState(false);
 
-  // Handle successful payment redirect
+  const [isPaid, setIsPaid] = useState(false);
+
+  // Handle successful payment (for URL-based fallback)
   useEffect(() => {
     const query = new URLSearchParams(window.location.search);
     if (query.get('success')) {
+      setIsPaid(true);
       alert('Payment successful! You can now download your image.');
     }
     if (query.get('canceled')) {
@@ -241,41 +253,70 @@ export default function ImageEditorPage() {
     newImg.src = canvas.toDataURL();
   };
 
-  const handleDownload = async () => {
+  const doDownload = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
-    const query = new URLSearchParams(window.location.search);
-    if (!query.get('success')) {
-      setIsPaying(true);
-      try {
-        const res = await fetch('/api/checkout', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            productName: 'Image Editor Premium Download',
-            amount: 5000,
-            redirectUrl: window.location.pathname,
-          }),
-        });
-        const { id, error } = await res.json();
-        if (error) throw new Error(error);
-
-        const stripe: any = await stripePromise;
-        await stripe?.redirectToCheckout({ sessionId: id });
-      } catch (err) {
-        console.error('Payment initiation failed', err);
-        alert('Failed to start payment process.');
-      } finally {
-        setIsPaying(false);
-      }
-      return;
-    }
-
     const link = document.createElement('a');
     link.download = 'shivanshstudio-edited.png';
     link.href = canvas.toDataURL('image/png');
     link.click();
+  };
+
+  const handleDownload = async () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    if (isPaid) {
+      doDownload();
+      return;
+    }
+
+    setIsPaying(true);
+    try {
+      const scriptLoaded = await loadRazorpayScript();
+      if (!scriptLoaded) throw new Error('Razorpay SDK failed to load.');
+
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          productName: 'Image Editor Premium Download',
+          amount: 3000, // 3000 paise = ₹30
+        }),
+      });
+      const { orderId, amount, currency, keyId, error } = await res.json();
+      if (error) throw new Error(error);
+
+      const options = {
+        key: keyId,
+        amount,
+        currency,
+        name: 'ShivanshStudio',
+        description: 'Image Editor Premium Download',
+        order_id: orderId,
+        handler: function () {
+          setIsPaid(true);
+          setIsPaying(false);
+          alert('Payment successful! Downloading your image...');
+          doDownload();
+        },
+        prefill: { name: '', email: '', contact: '' },
+        theme: { color: '#6366f1' },
+        modal: {
+          ondismiss: () => {
+            setIsPaying(false);
+            alert('Payment was canceled.');
+          },
+        },
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      console.error('Payment initiation failed', err);
+      alert('Failed to start payment process.');
+      setIsPaying(false);
+    }
   };
 
   const tabs: { key: Tab; label: string; icon: string }[] = [
@@ -343,7 +384,7 @@ export default function ImageEditorPage() {
                 disabled={isPaying}
                 className="px-6 py-2.5 gradient-primary text-white rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity shadow-lg disabled:opacity-50"
               >
-                {isPaying ? 'Redirecting...' : `${t(locale, 'common.downloadPNG')} (₹50)`}
+                {isPaying ? 'Redirecting...' : `${t(locale, 'common.downloadPNG')} (₹30)`}
               </button>
               <button
                 onClick={() => { setImage(null); setEnhanced(false); setBrightness(0); setContrast(0); setSaturation(0); setBlur(0); setRotation(0); setFlipH(false); setFlipV(false); setFilterPreset('none'); }}

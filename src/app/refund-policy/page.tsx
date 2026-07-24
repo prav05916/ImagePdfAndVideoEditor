@@ -3,8 +3,37 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Refund and Cancellation Policy - ShivanshStudio',
-  description: 'Refund, Cancellation, and Shipping Policy for ShivanshStudio.',
+  title: 'Refund & Cancellation Policy – ShivanshStudio | Digital Services Refund Policy',
+  description: 'Read the Refund and Cancellation Policy of ShivanshStudio. Understand our policy for digital design services including image editing, wedding card generation, and passport photo creation. No physical shipping — all digital deliveries.',
+  alternates: {
+    canonical: 'https://www.shivansh-studio.store/refund-policy',
+  },
+  openGraph: {
+    title: 'Refund & Cancellation Policy – ShivanshStudio',
+    description: 'Read ShivanshStudio\'s refund and cancellation policy for digital design services.',
+    url: 'https://www.shivansh-studio.store/refund-policy',
+    siteName: 'ShivanshStudio',
+    images: [
+      {
+        url: 'https://www.shivansh-studio.store/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'ShivanshStudio Refund and Cancellation Policy',
+        type: 'image/png',
+      }
+    ],
+    locale: 'en_IN',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Refund & Cancellation Policy – ShivanshStudio',
+    description: 'Read our refund and cancellation policy for digital design services.',
+  },
+  robots: {
+    index: true,
+    follow: false,
+  },
 };
 
 export default function RefundPolicy() {

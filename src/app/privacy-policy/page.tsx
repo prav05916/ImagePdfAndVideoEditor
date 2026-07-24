@@ -3,8 +3,37 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy - ShivanshStudio',
-  description: 'Privacy Policy for ShivanshStudio detailing how we handle your data.',
+  title: 'Privacy Policy – ShivanshStudio | How We Protect Your Data',
+  description: 'Read the Privacy Policy of ShivanshStudio. Learn how we collect, use, and protect your personal data including uploaded images, payment information, and cookies. Your privacy is our priority.',
+  alternates: {
+    canonical: 'https://www.shivansh-studio.store/privacy-policy',
+  },
+  openGraph: {
+    title: 'Privacy Policy – ShivanshStudio',
+    description: 'Read how ShivanshStudio handles and protects your personal data, images, and payment information.',
+    url: 'https://www.shivansh-studio.store/privacy-policy',
+    siteName: 'ShivanshStudio',
+    images: [
+      {
+        url: 'https://www.shivansh-studio.store/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'ShivanshStudio Privacy Policy',
+        type: 'image/png',
+      }
+    ],
+    locale: 'en_IN',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Privacy Policy – ShivanshStudio',
+    description: 'Learn how ShivanshStudio collects, uses, and protects your personal data.',
+  },
+  robots: {
+    index: true,
+    follow: false,
+  },
 };
 
 export default function PrivacyPolicy() {
@@ -33,7 +62,7 @@ export default function PrivacyPolicy() {
 
           <section>
             <h2 className="text-xl font-semibold text-gray-900 mb-3">4. Third-Party Services</h2>
-            <p>We use third-party payment processors (such as PhonePe) to securely handle transactions. We do not store your full credit card or banking information on our servers. These payment processors have their own privacy policies governing your data.</p>
+            <p>We use third-party payment processors (such as Razorpay) to securely handle transactions. We do not store your full credit card or banking information on our servers. These payment processors have their own privacy policies governing your data.</p>
           </section>
 
           <section>

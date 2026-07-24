@@ -17,6 +17,7 @@ const navItems = [
   { key: 'nav.bgRemover', href: '/background-remover', icon: '✂️' },
   { key: 'nav.quotePoster', href: '/quote-poster', icon: '✍️' },
   { key: 'nav.resumeEnhancer', href: '/resume-enhancer', icon: '🧾' },
+  { key: 'nav.passportMaker', href: '/passport-maker', icon: '🛂' },
 ];
 
 export default function Sidebar() {

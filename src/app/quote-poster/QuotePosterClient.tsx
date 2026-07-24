@@ -40,15 +40,35 @@ export default function QuotePosterPage() {
   const [fontStyle, setFontStyle] = useState<FontStyle>('serif');
   const [posterSize, setPosterSize] = useState<PosterSize>('square');
   const [fontSize, setFontSize] = useState(28);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const handleDownload = async () => {
-    if (!previewRef.current) return;
-    const html2canvas = (await import('html2canvas')).default;
-    const canvas = await html2canvas(previewRef.current, { scale: 2, backgroundColor: null });
-    const link = document.createElement('a');
-    link.download = 'quote-poster.png';
-    link.href = canvas.toDataURL('image/png');
-    link.click();
+    const el = previewRef.current;
+    if (!el) return;
+    setIsDownloading(true);
+    try {
+      const html2canvas = (await import('html2canvas')).default;
+      const canvas = await html2canvas(el, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: false,
+        logging: false,
+        backgroundColor: null,
+      });
+      const dataUrl = canvas.toDataURL('image/png');
+      if (!dataUrl || dataUrl === 'data:,') {
+        throw new Error('Canvas export produced empty data');
+      }
+      const link = document.createElement('a');
+      link.download = 'quote-poster.png';
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error('Download failed:', err);
+      alert('Could not generate poster PNG. Please try again.');
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   const size = sizeConfigs[posterSize];
@@ -152,8 +172,16 @@ export default function QuotePosterPage() {
             </div>
           </motion.div>
           <p className="text-text-muted text-xs mt-3">{size.w * 2} × {size.h * 2} px</p>
-          <button onClick={handleDownload} className="mt-4 px-6 py-2.5 gradient-primary text-white rounded-xl font-semibold text-sm shadow-lg">
-            {t(locale, 'common.downloadPNG')}
+          <button
+            onClick={handleDownload}
+            disabled={isDownloading}
+            className="mt-4 px-6 py-2.5 gradient-primary text-white rounded-xl font-semibold text-sm shadow-lg hover:shadow-xl transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+          >
+            {isDownloading ? (
+              <><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Generating PNG...</>
+            ) : (
+              <>{t(locale, 'common.downloadPNG')} ↓</>
+            )}
           </button>
         </div>
       </div>

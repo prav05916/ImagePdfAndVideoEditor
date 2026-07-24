@@ -9,43 +9,79 @@ import AIAssistant from "@/components/ui/AIAssistant";
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.shivansh-studio.store"),
   title: {
-    default: "ShivanshStudio - All-in-One Image Editor & Design Platform",
+    default: "ShivanshStudio – Free Online Image Editor, Wedding Cards & Design Tools",
     template: "%s | ShivanshStudio",
   },
   description:
-    "Create stunning wedding cards, edit images, make passport size photos, generate social media posts, and more with ShivanshStudio. Free online design tools with Hindi & English support.",
+    "ShivanshStudio is your free all-in-one design platform. Create stunning Indian wedding cards, remove image backgrounds with AI, edit photos, make passport size photos for government exams, design social media posts, and more. Supports Hindi & English.",
   keywords: [
-    "image editor",
-    "wedding card generator",
-    "invitation maker",
-    "social media post",
-    "background remover",
-    "quote poster",
+    "image editor online free",
+    "wedding card generator india",
+    "invitation maker online",
+    "social media post maker",
+    "AI background remover free",
+    "quote poster maker",
     "resume photo enhancer",
-    "online design tool",
-    "Indian wedding cards",
-    "Hindi wedding invitation",
-    "passport photo maker",
-    "passport size image editor",
-    "exam photo maker"
+    "online design tool free",
+    "Indian wedding cards online",
+    "Hindi wedding invitation maker",
+    "passport photo maker online",
+    "passport size photo editor",
+    "exam photo maker",
+    "video editor online free",
+    "shivansh studio",
+    "digital design tools india",
+    "free graphic design tool",
+    "shaadi card maker online",
+    "WhatsApp wedding invitation",
   ],
+  authors: [{ name: "ShivanshStudio", url: "https://www.shivansh-studio.store" }],
+  creator: "ShivanshStudio",
+  publisher: "ShivanshStudio",
+  category: "Design & Creative Tools",
   openGraph: {
-    title: "ShivanshStudio - All-in-One Image Editor & Design Platform",
+    title: "ShivanshStudio – Free Online Image Editor, Wedding Cards & Design Tools",
     description:
-      "Create stunning wedding cards, edit images, generate social media posts, and more.",
+      "Create stunning wedding cards, remove backgrounds with AI, make passport photos, edit images, and design social media posts — all free. Hindi & English supported.",
+    url: "https://www.shivansh-studio.store",
     type: "website",
     siteName: "ShivanshStudio",
-    locale: "en_US",
+    locale: "en_IN",
+    images: [
+      {
+        url: "https://www.shivansh-studio.store/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "ShivanshStudio – Free Online Design Platform for Indian Users",
+        type: "image/png",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "ShivanshStudio - All-in-One Image Editor & Design Platform",
+    title: "ShivanshStudio – Free Online Image Editor & Design Tools",
     description:
-      "Create stunning wedding cards, edit images, generate social media posts, and more.",
+      "Create wedding cards, remove backgrounds, make passport photos & more — free. Hindi & English support.",
+    images: ["https://www.shivansh-studio.store/og-image.png"],
+    creator: "@shivanshstudio",
+    site: "@shivanshstudio",
   },
   robots: {
     index: true,
     follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+  alternates: {
+    canonical: "https://www.shivansh-studio.store",
+  },
+  verification: {
+    google: "ox4VTUbDahG8OuY0-swj_8gpmzcLW3mhs1hUKsuQONg",
   },
 };
 
@@ -55,7 +91,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en-IN">
       <head>
         {/* DNS prefetch and preconnect for performance */}
         <link rel="dns-prefetch" href="https://www.clarity.ms" />
@@ -69,11 +105,7 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
 
-        {/* Google Site Verification */}
-        <meta
-          name="google-site-verification"
-          content="ox4VTUbDahG8OuY0-swj_8gpmzcLW3mhs1hUKsuQONg"
-        />
+        {/* Google Site Verification is now handled via Next.js metadata.verification */}
 
         {/* Font styles */}
         <link
@@ -106,27 +138,67 @@ export default function RootLayout({
           }}
         />
 
-        {/* Global Structured Data (JSON-LD) */}
-        <Script id="json-ld" type="application/ld+json" strategy="afterInteractive">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "WebApplication",
-            "name": "ShivanshStudio",
-            "url": "https://www.shivansh-studio.store",
-            "description": "All-in-one image editor, video editor, passport size photo maker, and wedding card generator.",
-            "applicationCategory": "DesignApplication",
-            "operatingSystem": "Web",
-            "author": {
-              "@type": "Person",
-              "name": "Er Praveeen Kumar"
-            },
-            "offers": {
-              "@type": "Offer",
-              "price": "0",
-              "priceCurrency": "USD"
-            }
-          })}
-        </Script>
+        {/* Global Structured Data (JSON-LD) – Organization + WebSite + WebApplication */}
+        <Script
+          id="json-ld-org"
+          type="application/ld+json"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@graph": [
+                {
+                  "@type": "Organization",
+                  "@id": "https://www.shivansh-studio.store/#organization",
+                  "name": "ShivanshStudio",
+                  "url": "https://www.shivansh-studio.store",
+                  "logo": {
+                    "@type": "ImageObject",
+                    "url": "https://www.shivansh-studio.store/logo.png",
+                    "width": 512,
+                    "height": 512
+                  },
+                  "sameAs": [
+                    "https://www.shivansh-studio.store"
+                  ]
+                },
+                {
+                  "@type": "WebSite",
+                  "@id": "https://www.shivansh-studio.store/#website",
+                  "url": "https://www.shivansh-studio.store",
+                  "name": "ShivanshStudio",
+                  "description": "Free all-in-one image editor, wedding card generator, passport photo maker, background remover and more.",
+                  "publisher": { "@id": "https://www.shivansh-studio.store/#organization" },
+                  "inLanguage": "en-IN",
+                  "potentialAction": {
+                    "@type": "SearchAction",
+                    "target": "https://www.shivansh-studio.store/search?q={search_term_string}",
+                    "query-input": "required name=search_term_string"
+                  }
+                },
+                {
+                  "@type": "WebApplication",
+                  "@id": "https://www.shivansh-studio.store/#webapp",
+                  "name": "ShivanshStudio",
+                  "url": "https://www.shivansh-studio.store",
+                  "description": "All-in-one free design platform: image editor, wedding card generator, passport size photo maker, AI background remover, video editor, and social media post creator.",
+                  "applicationCategory": "DesignApplication",
+                  "operatingSystem": "Web",
+                  "browserRequirements": "Requires JavaScript. Requires HTML5.",
+                  "offers": {
+                    "@type": "Offer",
+                    "price": "0",
+                    "priceCurrency": "INR",
+                    "availability": "https://schema.org/InStock"
+                  },
+                  "author": {
+                    "@id": "https://www.shivansh-studio.store/#organization"
+                  }
+                }
+              ]
+            })
+          }}
+        />
       </body>
     </html>
   );

@@ -3,8 +3,37 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Terms and Conditions - ShivanshStudio',
-  description: 'Terms and Conditions for using ShivanshStudio services.',
+  title: 'Terms and Conditions – ShivanshStudio | User Agreement & Service Terms',
+  description: 'Read the Terms and Conditions for using ShivanshStudio. Understand your rights and responsibilities when using our free online design tools including image editor, wedding card maker, and passport photo creator.',
+  alternates: {
+    canonical: 'https://www.shivansh-studio.store/terms',
+  },
+  openGraph: {
+    title: 'Terms and Conditions – ShivanshStudio',
+    description: 'Read the user agreement and service terms for ShivanshStudio\'s free online design tools.',
+    url: 'https://www.shivansh-studio.store/terms',
+    siteName: 'ShivanshStudio',
+    images: [
+      {
+        url: 'https://www.shivansh-studio.store/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'ShivanshStudio Terms and Conditions',
+        type: 'image/png',
+      }
+    ],
+    locale: 'en_IN',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Terms and Conditions – ShivanshStudio',
+    description: 'Read the user agreement and service terms for ShivanshStudio.',
+  },
+  robots: {
+    index: true,
+    follow: false,
+  },
 };
 
 export default function TermsAndConditions() {
@@ -28,7 +57,7 @@ export default function TermsAndConditions() {
 
           <section>
             <h2 className="text-xl font-semibold text-gray-900 mb-3">3. Payments</h2>
-            <p>All payments made on the website are secure. We use third-party payment processors (such as PhonePe) to handle transactions. By making a payment, you agree to provide current, complete, and accurate purchase and account information.</p>
+            <p>All payments made on the website are secure. We use third-party payment processors (such as Razorpay) to handle transactions. By making a payment, you agree to provide current, complete, and accurate purchase and account information.</p>
           </section>
 
           <section>

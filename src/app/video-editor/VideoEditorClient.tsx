@@ -53,30 +53,40 @@ interface PreviewVideoProps {
 
 function PreviewVideo({ src, isPlaying, timelineTime, startAt, trimStart, trimEnd, volume, speed }: PreviewVideoProps) {
   const ref = useRef<HTMLVideoElement>(null);
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
     const video = ref.current;
     if (!video) return;
 
-    const clipTime = (timelineTime - startAt) * speed + trimStart;
+    const targetTime = Math.max(trimStart, Math.min(trimEnd, (timelineTime - startAt) * speed + trimStart));
 
-    if (Math.abs(video.currentTime - clipTime) > 0.25) {
-      video.currentTime = Math.max(trimStart, Math.min(trimEnd, clipTime));
-    }
+    const syncPlayback = () => {
+      try {
+        if (Math.abs(video.currentTime - targetTime) > 0.25) {
+          video.currentTime = targetTime;
+        }
+        video.volume = volume;
+        video.playbackRate = speed;
 
-    video.volume = volume;
-    video.playbackRate = speed;
-
-    if (isPlaying) {
-      if (video.paused) {
-        video.play().catch(() => { });
+        if (isPlaying) {
+          if (video.paused) {
+            video.play().catch(() => {});
+          }
+        } else {
+          if (!video.paused) {
+            video.pause();
+          }
+        }
+      } catch (e) {
+        console.warn('Video playback sync warning:', e);
       }
-    } else {
-      if (!video.paused) {
-        video.pause();
-      }
+    };
+
+    if (video.readyState >= 1) {
+      syncPlayback();
     }
-  }, [isPlaying, timelineTime, startAt, trimStart, trimEnd, volume, speed]);
+  }, [isPlaying, timelineTime, startAt, trimStart, trimEnd, volume, speed, isReady]);
 
   return (
     <video
@@ -85,6 +95,14 @@ function PreviewVideo({ src, isPlaying, timelineTime, startAt, trimStart, trimEn
       className="w-full h-full object-cover"
       muted={volume === 0}
       playsInline
+      preload="auto"
+      onLoadedMetadata={() => {
+        setIsReady(true);
+        if (ref.current) {
+          try { ref.current.currentTime = trimStart; } catch (e) {}
+        }
+      }}
+      onCanPlay={() => setIsReady(true)}
     />
   );
 }
@@ -142,6 +160,11 @@ export default function VideoEditorPage() {
   const [ffmpeg, setFFmpeg] = useState<FFmpeg | null>(null);
   const [ready, setReady] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [ffmpegError, setFfmpegError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  // Mark as mounted after hydration to avoid SSR/client mismatch
+  useEffect(() => { setMounted(true); }, []);
 
   const [activeLeftTab, setActiveLeftTab] = useState<'media' | 'audio' | 'text' | 'effects' | 'merger'>('media');
 
@@ -272,19 +295,28 @@ export default function VideoEditorPage() {
   useEffect(() => {
     (async () => {
       try {
+        // Check SharedArrayBuffer is available (needed for FFmpeg WASM multi-threading)
+        if (typeof SharedArrayBuffer === 'undefined') {
+          setFfmpegError('SharedArrayBuffer is not available. This page requires COOP/COEP headers (already configured). Try a hard refresh (Cmd+Shift+R).');
+          return;
+        }
         const f = new FFmpeg();
-        const base = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd';
+        // Use locally hosted FFmpeg files (avoids CSP/CORS issues with external CDNs)
+        // Files are at /public/ffmpeg/ → served as /ffmpeg/ by Next.js
+        const baseURL = window.location.origin;
         await f.load({
-          coreURL: await toBlobURL(`${base}/ffmpeg-core.js`, 'text/javascript'),
-          wasmURL: await toBlobURL(`${base}/ffmpeg-core.wasm`, 'application/wasm'),
+          coreURL: await toBlobURL(`${baseURL}/ffmpeg/ffmpeg-core.js`, 'text/javascript'),
+          wasmURL: await toBlobURL(`${baseURL}/ffmpeg/ffmpeg-core.wasm`, 'application/wasm'),
         });
         setFFmpeg(f);
         setReady(true);
       } catch (e) {
-        console.error(e);
+        console.error('FFmpeg failed to load:', e);
+        setFfmpegError('Video processing engine failed to load. Try a hard refresh (Cmd+Shift+R).');
       }
     })();
   }, []);
+
 
   useEffect(() => {
     let lastTime = performance.now();
@@ -443,29 +475,36 @@ export default function VideoEditorPage() {
 
       const url = URL.createObjectURL(file);
 
-      if (type === 'video' || type === 'audio') {
-        const tempElement = document.createElement(type);
-        tempElement.src = url;
-        tempElement.onloadedmetadata = () => {
-          const duration = tempElement.duration || 10;
-          setMediaLibrary(p => [...p, {
-            id: Date.now().toString() + Math.random().toString(),
-            file,
-            url,
-            type,
-            name: file.name,
-            duration
-          }]);
-        };
-      } else {
-        setMediaLibrary(p => [...p, {
+      const addAssetAndClip = (duration: number) => {
+        const item = {
           id: Date.now().toString() + Math.random().toString(),
           file,
           url,
           type,
           name: file.name,
-          duration: 5
-        }]);
+          duration,
+        };
+        setMediaLibrary(p => [...p, item]);
+        addClipToTimeline(item);
+      };
+
+      if (type === 'video' || type === 'audio') {
+        const tempElement = document.createElement(type) as HTMLVideoElement | HTMLAudioElement;
+        tempElement.preload = 'metadata';
+        let handled = false;
+        const onDone = () => {
+          if (handled) return;
+          handled = true;
+          const duration = tempElement.duration && !isNaN(tempElement.duration) && isFinite(tempElement.duration) ? tempElement.duration : 10;
+          addAssetAndClip(duration);
+        };
+        tempElement.onloadedmetadata = onDone;
+        tempElement.onerror = () => onDone();
+        tempElement.src = url;
+        tempElement.load();
+        setTimeout(onDone, 800);
+      } else {
+        addAssetAndClip(5);
       }
     });
   };
@@ -737,8 +776,17 @@ export default function VideoEditorPage() {
           <button className="text-xs font-semibold px-3 py-1.5 rounded hover:bg-white/10 transition">Edit</button>
         </div>
         <div className="flex items-center gap-3">
-          {!ready && <span className="text-[10px] text-yellow-500 uppercase tracking-widest font-bold animate-pulse">⏳ Engine Loading...</span>}
-          {ready && <span className="text-[10px] text-white/50 uppercase tracking-widest font-bold">1080p • 60FPS</span>}
+          {mounted && !ready && !ffmpegError && (
+            <span className="text-[10px] text-yellow-500 uppercase tracking-widest font-bold animate-pulse">⏳ Loading Engine...</span>
+          )}
+          {mounted && ffmpegError && (
+            <span className="text-[10px] text-red-400 font-bold max-w-[200px] truncate" title={ffmpegError}>
+              ⚠️ Engine Error
+            </span>
+          )}
+          {mounted && ready && (
+            <span className="text-[10px] text-green-400 uppercase tracking-widest font-bold">✓ 1080p Ready</span>
+          )}
           <button onClick={exportVideo} disabled={isProcessing || !ready} className="px-6 py-1.5 text-xs font-bold bg-blue-600 hover:bg-blue-500 rounded text-white transition-colors disabled:opacity-50">
             {isProcessing ? 'Rendering...' : 'Export Video'}
           </button>
