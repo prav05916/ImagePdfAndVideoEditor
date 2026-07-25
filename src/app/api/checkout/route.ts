@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Razorpay from 'razorpay';
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID!,
-  key_secret: process.env.RAZORPAY_KEY_SECRET!,
-});
+function getRazorpayInstance() {
+  return new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_placeholder',
+    key_secret: process.env.RAZORPAY_KEY_SECRET || 'secret_placeholder',
+  });
+}
 
 // Razorpay minimum is 100 paise (₹1), max sensibly capped at ₹5000
 const MIN_AMOUNT_PAISE = 100;
@@ -12,6 +14,7 @@ const MAX_AMOUNT_PAISE = 500_000;
 
 export async function POST(req: NextRequest) {
   try {
+    const razorpay = getRazorpayInstance();
     const body = await req.json().catch(() => null);
 
     if (!body || typeof body !== 'object') {

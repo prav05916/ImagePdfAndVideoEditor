@@ -90,17 +90,6 @@ const nextConfig: NextConfig = {
         headers: securityHeaders,
       },
 
-      // ── Static assets: long-lived immutable cache ────────────────────
-      {
-        source: "/_next/static/(.*)",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=31536000, immutable",
-          },
-        ],
-      },
-
       // ── Public assets (favicon, images, etc.) ───────────────────────
       {
         source: "/(.*)\\.(png|jpg|jpeg|gif|webp|svg|ico|woff2|woff|ttf)",
