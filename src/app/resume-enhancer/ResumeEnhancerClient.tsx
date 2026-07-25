@@ -422,12 +422,15 @@ export default function ResumeEnhancerPage() {
     try {
       const html2canvas = (await import('html2canvas')).default;
       const canvas = await html2canvas(element, {
-        scale: 2,
+        scale: 3,
         useCORS: true,
         allowTaint: false,
         backgroundColor: '#ffffff',
         logging: false,
         onclone: (_doc: Document, el: HTMLElement) => {
+          if (el.parentElement) {
+            el.parentElement.style.transform = 'none';
+          }
           const clonedDoc = el.ownerDocument;
           clonedDoc.querySelectorAll('style').forEach(styleEl => {
             if (styleEl.textContent) {

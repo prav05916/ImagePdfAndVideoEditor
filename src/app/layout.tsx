@@ -139,10 +139,9 @@ export default function RootLayout({
         />
 
         {/* Global Structured Data (JSON-LD) – Organization + WebSite + WebApplication */}
-        <Script
+        <script
           id="json-ld-org"
           type="application/ld+json"
-          strategy="afterInteractive"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",
